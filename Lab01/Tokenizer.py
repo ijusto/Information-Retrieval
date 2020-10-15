@@ -14,17 +14,17 @@ class Tokenizer:
 
         # get the portuguese stopwords
         with open('stopwords.txt', 'r') as document:
-            stopwords = list(filter(None,re.split("[ \n]", document.read())))
+            nostopwords = list(filter(None,re.split("[ \n]", document.read())))
         document.close()
 
         # get the english stopwords
         with open('stopwords_en.txt', 'r') as document:
-            stopwords += list(filter(None,re.split("[ \n]", document.read())))
+            nostopwords += list(filter(None,re.split("[ \n]", document.read())))
         document.close()
 
         for token in tokens:
             #  ommit very common words
-            if token.lower() not in stopwords:
+            if token.lower() not in nostopwords:
                 # apply linguistic module
                 self.terms += [token.lower()]
 

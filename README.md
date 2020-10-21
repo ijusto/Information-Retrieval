@@ -1,2 +1,2 @@
 # Information-Retrieval
-Labs of the Information Retrieval course, University of Aveiro
+Labs and Assignments of the Information Retrieval course, University of Aveiro

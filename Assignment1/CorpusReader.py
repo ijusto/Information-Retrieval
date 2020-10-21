@@ -14,3 +14,4 @@ class CorpusReader:
         data = pd.read_csv(self.csv)
         corpus = list(zip(data['sha'], data['title'], data['abstract']))
         clean_collection = [(sha, title, abst) for (sha, title, abst) in corpus if abst is not np.nan]
+        return clean_collection

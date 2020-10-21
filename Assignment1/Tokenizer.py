@@ -8,6 +8,7 @@
 
 import re
 import CorpusReader
+import Stemmer
 
 class Tokenizer:
 
@@ -62,6 +63,31 @@ class BetterTokenizer(Tokenizer):
             stopwords += list(filter(None,re.split("[ \n]", document.read())))
         document.close()
         return filter(lambda term: term not in stopwords, terms)
+
+    def stem(self, terms):
+        # Stem a single word:
+        '''
+        cprint(stemmer.stemWord('cycling'))
+        # cycl
+        '''
+
+        # Stem a list of words:
+        '''
+        print(stemmer.stemWords(['cycling', 'cyclist']))
+        # ['cycl', 'cyclist']
+        '''
+
+        # Each instance of the stemming algorithms uses a cache to speed up processing of common words.By default, the
+        # cache holds 10000 words, but this may be modified.The cache may be disabled entirely by setting the cache
+        # size to 0:
+        '''
+        print(stemmer.maxCacheSize)
+        #10000
+        stemmer.maxCacheSize = 1000
+        '''
+
+        stemmer = Stemmer.Stemmer('english')
+        return stemmer.stemWord(terms)
 
     def getTokens(self):
         return self.terms

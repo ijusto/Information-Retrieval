@@ -4,7 +4,7 @@ document processor, tokenizer, and indexer.
 
 [PyStemmer]("https://github.com/snowballstem/pystemmer") Installation
 ----------------------
-[PyStemmer]("https://github.com/snowballstem/pystemmer") uses distutils, so all that is necessary to build and install
+PyStemmer (<https://github.com/snowballstem/pystemmer>) uses distutils, so all that is necessary to build and install
 PyStemmer is the usual distutils invocation::
 
     python setup.py install

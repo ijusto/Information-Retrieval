@@ -53,41 +53,23 @@ class BetterTokenizer(Tokenizer):
         super().readTokens()
 
     def createTerms(self):
-        # TODO: this function
-        pass
+        for docId in self.doc_map.keys():
+            # TODO: better changes and splits
+            pass
+        self.stopWordFilter()
+        self.stem()
 
-    def stopWordFilter(self, terms):
+    def stopWordFilter(self):
         # get the english stopwords
         stopwords = ""
         with open('snowball_stopwords_EN.txt', 'r') as document:
             stopwords += list(filter(None,re.split("[ \n]", document.read())))
         document.close()
-        return list(filter(lambda term: term not in stopwords, terms))
+        self.terms = list(filter(lambda term: term not in stopwords, self.terms))
 
-    def stem(self, terms):
-        # Stem a single word:
-        '''
-        cprint(stemmer.stemWord('cycling'))
-        # cycl
-        '''
-
-        # Stem a list of words:
-        '''
-        print(stemmer.stemWords(['cycling', 'cyclist']))
-        # ['cycl', 'cyclist']
-        '''
-
-        # Each instance of the stemming algorithms uses a cache to speed up processing of common words.By default, the
-        # cache holds 10000 words, but this may be modified.The cache may be disabled entirely by setting the cache
-        # size to 0:
-        '''
-        print(stemmer.maxCacheSize)
-        #10000
-        stemmer.maxCacheSize = 1000
-        '''
-
+    def stem(self):
         stemmer = Stemmer.Stemmer('english')
-        return stemmer.stemWord(terms)
+        self.terms = stemmer.stemWords(self.terms)
 
     def getTokens(self):
         return self.terms

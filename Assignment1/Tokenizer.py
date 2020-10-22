@@ -18,7 +18,7 @@ class Tokenizer:
         self.terms = {} # key: docId, value: list of terms
 
     def readTokens(self):
-        doc_list = CorpusReader.CorpusReader("all_sources_metadata_2020-03-13.csv").readCorpus()
+        doc_list = CorpusReader.CorpusReader(self.file).readCorpus()
         for (sha, title, abst) in doc_list:
             self.doc_map[sha] = (title, abst)
 
@@ -38,7 +38,7 @@ class SimpleTokenizer(Tokenizer):
                                                                                 + self.doc_map[docId][1])
                                                         .lower())
             # ignores all tokens with less than 3 characters
-            self.terms[docId] = filter(lambda term: len(term) >= 3, self.terms[docId])
+            self.terms[docId] = list(filter(lambda term: len(term) >= 3, self.terms[docId]))
 
     def getTokens(self):
         return self.terms
@@ -62,7 +62,7 @@ class BetterTokenizer(Tokenizer):
         with open('snowball_stopwords_EN.txt', 'r') as document:
             stopwords += list(filter(None,re.split("[ \n]", document.read())))
         document.close()
-        return filter(lambda term: term not in stopwords, terms)
+        return list(filter(lambda term: term not in stopwords, terms))
 
     def stem(self, terms):
         # Stem a single word:

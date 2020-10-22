@@ -5,3 +5,12 @@
 #   b) What is your vocabulary size?
 #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
 #   d) List the ten terms with highest document frequency.
+
+import Tokenizer
+
+class Indexer:
+
+    def __init__(self, file):
+        self.simple_tokenizer = Tokenizer.SimpleTokenizer(file)
+        self.better_tokenizer = Tokenizer.BetterTokenizer(file)
+        self.shat_table = None

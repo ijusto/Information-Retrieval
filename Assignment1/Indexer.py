@@ -5,7 +5,7 @@
 #   b) What is your vocabulary size?
 #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
 #   d) List the ten terms with highest document frequency.
-
+import CorpusReader
 import Tokenizer
 
 class Indexer:
@@ -13,4 +13,19 @@ class Indexer:
     def __init__(self, file):
         self.simple_tokenizer = Tokenizer.SimpleTokenizer(file)
         self.better_tokenizer = Tokenizer.BetterTokenizer(file)
-        self.shat_table = None
+
+
+        doc_list = CorpusReader.CorpusReader(file).readCorpus()
+        sha_table = {}
+        count = -1
+        doc_map = {}
+        for (sha, title, abst) in doc_list:
+            count += 1
+            sha_table[sha] = count
+            doc_map[count] = (title, abst)
+
+        self.simple_tokenizer.readTokens(doc_map)
+        self.better_tokenizer.readTokens(doc_map)
+
+    def index(self):
+        pass

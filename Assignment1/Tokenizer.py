@@ -17,11 +17,8 @@ class Tokenizer:
         self.doc_map = {} # key: docId, value: (title, abstract)
         self.terms = {} # key: docId, value: list of terms
 
-    def readTokens(self):
-        doc_list = CorpusReader.CorpusReader(self.file).readCorpus()
-        for (sha, title, abst) in doc_list:
-            self.doc_map[sha] = (title, abst)
-
+    def readTokens(self, doc_map):
+        self.doc_map = doc_map
 
 class SimpleTokenizer(Tokenizer):
 
@@ -54,6 +51,12 @@ class BetterTokenizer(Tokenizer):
 
     def createTerms(self):
         for docId in self.doc_map.keys():
+            # split by whitespace
+            self.terms[docId] = re.split('[\s]', self.doc_map[docId][0] + " " + self.doc_map[docId][1])
+
+            # maintain emails
+
+
             # TODO: better changes and splits
             pass
         self.stopWordFilter()

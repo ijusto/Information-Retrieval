@@ -48,15 +48,22 @@ class BetterTokenizer(Tokenizer):
 
     def readTokens(self):
         super().readTokens()
-
+        
     def createTerms(self):
         for docId in self.doc_map.keys():
             # split by whitespace
             self.terms[docId] = re.split('[\s]', self.doc_map[docId][0] + " " + self.doc_map[docId][1])
 
-            # maintain emails
+            # dealing with pontuation except the (.), (-), (@) and (') - deal with emails, hyphen words and prime words (NOT COMPLETED)
+            self.terms[docId] =  re.sub(r'[!"#$%&()*+,/:;<=>?[\\^]_`´{\|}~]', '',  self.doc_map[docId][0])
 
+            # dealing with prime (') (NOT COMPLETED)
+            self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])
+            
+            # dealing with websites (/ : .)
 
+            # dealing with emails (NOT COMPLETED)
+            self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])
             # TODO: better changes and splits
             pass
         self.stopWordFilter()
@@ -76,3 +83,21 @@ class BetterTokenizer(Tokenizer):
 
     def getTokens(self):
         return self.terms
+
+
+
+
+
+ sentence=str(sentence)
+    sentence = sentence.lower()
+    sentence=sentence.replace('{html}',"") 
+    cleanr = re.compile('<.*?>')
+    cleantext = re.sub(cleanr, '', sentence)
+    rem_url=re.sub(r'http\S+', '',cleantext)
+    rem_num = re.sub('[0-9]+', '', rem_url)
+    tokenizer = RegexpTokenizer(r'\w+')
+    tokens = tokenizer.tokenize(rem_num)  
+    filtered_words = [w for w in tokens if len(w) > 2 if not w in stopwords.words('english')]
+    stem_words=[stemmer.stem(w) for w in filtered_words]
+    lemma_words=[lemmatizer.lemmatize(w) for w in stem_words]
+    return " ".join(filtered_words)

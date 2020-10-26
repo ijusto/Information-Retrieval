@@ -66,6 +66,12 @@ class BetterTokenizer(Tokenizer):
             
             # dealing with emails (NOT COMPLETED)
             self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])
+
+            # DEAL with this type of situations:
+            # Finland's  isn't  Passengers'  porta-voz  Coronavirus:   2019-2020  (Whuan)  COVID-19
+            # (qwerty):   Sars-COV-2   health - The   "Anxiety..."    receptor-independent -dependent
+
+
             # TODO: better changes and splits
             pass
         self.stopWordFilter()

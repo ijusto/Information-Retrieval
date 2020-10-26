@@ -54,8 +54,8 @@ class BetterTokenizer(Tokenizer):
             # split by whitespace
             self.terms[docId] = re.split('[\s]', self.doc_map[docId][0] + " " + self.doc_map[docId][1])
 
-            # dealing with pontuation except the (.), (-), (@) and (') - deal with emails, hyphen words and prime words (NOT COMPLETED)
-            self.terms[docId] =  re.sub(r'[!"#$%&()*+,/:;<=>?[\\^]_`´{\|}~]', '',  self.doc_map[docId][0])
+            # dealing with pontuation except the (.), (-), (@), (/) and (') - deal with emails, hyphen words, prime words and websites (NOT COMPLETED)
+            self.terms[docId] =  re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\\\^\_\`\~]+', '',  self.doc_map[docId][0])
 
             # dealing with prime (') (NOT COMPLETED)
             self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])

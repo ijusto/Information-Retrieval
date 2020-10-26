@@ -60,7 +60,7 @@ class BetterTokenizer(Tokenizer):
             # dealing with prime (') (NOT COMPLETED)
             self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])
             
-            # dealing with websites (/ : .)
+            # dealing with websites (/ : .) ATENTION to special characters in links
 
             # dealing with emails (NOT COMPLETED)
             self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])

@@ -50,29 +50,33 @@ class BetterTokenizer(Tokenizer):
         super().readTokens()
         
     def createTerms(self):
-        for docId in self.doc_map.keys():
+        mail = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+        for docId in self.doc_map.keys():   
+
             # split by whitespace
             self.terms[docId] = re.split('[\s]', self.doc_map[docId][0] + " " + self.doc_map[docId][1])
-
-            # dealing with pontuation except the (.), (-), (@), (/) and (') - deal with emails, hyphen words, prime words and websites (NOT COMPLETED)
-            self.terms[docId] =  re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\\\^\_\`\~]+', '',  self.doc_map[docId][0])
-
-            # dealing with prime (') (NOT COMPLETED)
-            self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])
             
-            # dealing with websites (/ : .) ATENTION to special characters in links (NOT COMPLETED)
-            self.terms[docId] =  re.sub(r'[(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)]', '',  self.doc_map[docId][0])
+            # ignore websites
+            if re.match(r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)', self.doc_map[docId][0]):
+                self.terms[docId] = self.doc_map[docId][0]
+            
+            #ignore emails
+            elif re.match(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', self.doc_map[docId][0]): 
+                self.terms[docId] = self.doc_map[docId][0]
+            
+            #ignore words with hyphens and aphostrophes and both
+            # 's, yea', don't, -yeah, no-, ice-cream, Qu'est-ce, Mary's, High-school, 'tis, Chambers', Qu'est-ce, Finland's, isn't, Passengers'
+            # 2019-2020, COVID-19, receptor-independent
+            elif re.match(r"'?\w[\w']*(?:-\w+)*'?", self.doc_map[docId][0]): 
+                self.terms[docId] = self.doc_map[docId][0]
+
+            # dealing with extra pontuation and symbols
+            # ignoring (_) for this type of situation NC_004718.3
+            else:
+                self.terms[docId] =  re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~]+', '',  self.doc_map[docId][0])
+            
 
             
-            # dealing with emails (NOT COMPLETED)
-            self.terms[docId] =  re.sub(r'[\']', '',  self.doc_map[docId][0])
-
-            # DEAL with this type of situations:
-            # Finland's  isn't  Passengers'  porta-voz  Coronavirus:   2019-2020  (Whuan)  COVID-19
-            # (qwerty):   Sars-COV-2   health - The   "Anxiety..."    receptor-independent -dependent
-
-
-            # TODO: better changes and splits
             pass
         self.stopWordFilter()
         self.stem()

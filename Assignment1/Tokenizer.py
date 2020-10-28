@@ -16,9 +16,10 @@ class Tokenizer:
         self.file = file
         self.doc_map = {} # key: docId, value: (title, abstract)
         self.terms = {} # key: docId, value: list of terms
-
+        
     def readTokens(self, doc_map):
         self.doc_map = doc_map
+        
 
 class SimpleTokenizer(Tokenizer):
 
@@ -50,9 +51,7 @@ class BetterTokenizer(Tokenizer):
         super().readTokens()
         
     def createTerms(self):
-        mail = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
         for docId in self.doc_map.keys():   
-
             # split by whitespace
             self.terms[docId] = re.split('[\s]', self.doc_map[docId][0] + " " + self.doc_map[docId][1])
             
@@ -94,3 +93,4 @@ class BetterTokenizer(Tokenizer):
 
     def getTokens(self):
         return self.terms
+foo = BetterTokenizer(Tokenizer)

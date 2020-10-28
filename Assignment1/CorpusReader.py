@@ -20,4 +20,4 @@ class CorpusReader:
         return corpus
 
 cr = CorpusReader("data/all_sources_metadata_2020-03-13.csv")
-print(cr.readCorpus())
+#print(cr.readCorpus())

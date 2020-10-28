@@ -13,7 +13,7 @@ class Indexer:
     def __init__(self, file):
         self.simple_tokenizer = Tokenizer.SimpleTokenizer(file)
         self.better_tokenizer = Tokenizer.BetterTokenizer(file)
-
+        
 
         doc_list = CorpusReader.CorpusReader(file).readCorpus()
         sha_table = {}
@@ -26,6 +26,9 @@ class Indexer:
 
         self.simple_tokenizer.readTokens(doc_map)
         self.better_tokenizer.readTokens(doc_map)
+        self.better_tokenizer.createTerms(doc_map)
+       
 
     def index(self):
+        print('passs')
         pass

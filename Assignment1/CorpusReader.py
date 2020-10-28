@@ -2,7 +2,6 @@
 # each document.
 # For this assignment consider only the title and abstract fields and ignore documents with an empty abstract.
 
-import pandas as pd
 import numpy as np
 import csv
 

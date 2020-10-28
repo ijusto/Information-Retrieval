@@ -73,13 +73,12 @@ class BetterTokenizer(Tokenizer):
             # dealing with extra pontuation and symbols
             # ignoring (_) for this type of situation NC_004718.3
             else:
-                self.terms[docId] =  re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~]+', '',  self.doc_map[docId][0])
+                self.terms[docId] =  re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '',  self.doc_map[docId][0])
             
-
             
-            pass
         self.stopWordFilter()
         self.stem()
+        print(self.terms)
 
     def stopWordFilter(self):
         # get the english stopwords

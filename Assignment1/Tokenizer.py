@@ -15,13 +15,13 @@ class Tokenizer:
     def __init__(self, title, abstract):
         self.title = title
         self.abstract = abstract
-        self.terms = []
 
 
 class SimpleTokenizer(Tokenizer):
 
     def __init__(self, title, abstract):
         super().__init__(title, abstract)
+        self.terms = []
 
     def getTerms(self):
         # replaces all non-alphabetic characters by a space, lowercases tokens, splits on whitespace
@@ -37,6 +37,7 @@ class BetterTokenizer(Tokenizer):
 
     def __init__(self, title, abstract):
         super().__init__(title, abstract)
+        self.terms = []
 
     def getTerms(self):
         # split by whitespace
@@ -54,9 +55,9 @@ class BetterTokenizer(Tokenizer):
             # maintain emails
             email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
             # maintain words with hyphens
-            hyphen_match = re.findall(r"[A-Za-z0-9]+(-)[A-Za-z0-9]+", term)
+            hyphen_match = re.findall(r"([A-Za-z0-9]+-[A-Za-z0-9]+)", term)
             # maintain aphostrophes
-            aphostophe_match = re.findall(r"[A-Za-z]+(')[A-Za-z]*", term)
+            aphostophe_match = re.findall(r"([A-Za-z]+'[A-Za-z]*)", term)
             # maintain acronyms
             acronyms_match = re.findall(r'\b(?:[a-zA-Z]\.){2,}', term)
             # maintain siglas
@@ -70,6 +71,8 @@ class BetterTokenizer(Tokenizer):
             elif hyphen_match:
                 print(term)
                 print(hyphen_match)
+                print(type(hyphen_match))
+                print(type(self.terms))
                 self.terms += hyphen_match
                 print(term)
             elif aphostophe_match:

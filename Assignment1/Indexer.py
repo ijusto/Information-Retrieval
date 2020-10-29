@@ -10,11 +10,7 @@ import psutil
 import os
 
 
-## Documentation for a class.
-#
-#  More details.
-
-
+## Indexer
 class Indexer:
 
     ## The constructor.
@@ -41,7 +37,7 @@ class Indexer:
         #   b) What is your vocabulary size?
         print('\nVocabulary Size: {}'.format(len(self.term_map.keys())))
 
-    ## Documentation for a method.
+    ## Populates the term_map dictionary with another dictionary with doi's as keys and the term's frequency in that document
     #  @param self The object pointer.
     def index(self):
         for doi, title, abstract in self.col:
@@ -62,17 +58,15 @@ class Indexer:
                     term_freq_map[doi] = 1
                     self.term_map[term] = term_freq_map
 
-    ## Documentation for a method.
+    ## Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     #  @param self The object pointer.
-    #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
-    def getTermsInOneDoc(self):
+    def listTermsInOneDoc(self):
         terms_sorted = sorted(self.term_map.keys())
         results = [term for term in terms_sorted if len(self.term_map[term].keys()) == 1]
         print('Ten first Terms in only 1 document: {}'.format(results[:10]))
 
-    ## Documentation for a method.
+    ## Lists the ten terms with highest document frequency.
     #  @param self The object pointer.
-    #   d) List the ten terms with highest document frequency.
-    def getHighestDocFreqTerms(self):
+    def listHighestDocFreqTerms(self):
         doc_freq = sorted(self.term_map.keys(), key=lambda x: len(self.term_map[x].keys()))
         print('Ten terms with highest document frequency: {}'.format(doc_freq[:10]))

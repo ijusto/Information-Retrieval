@@ -23,8 +23,8 @@ class CorpusReader:
                 doi = rows[iter][3].replace("doi.org/", "").replace("http://dx.doi.org/", "")
                 title = rows[iter][2]
                 abstract = rows[iter][7]
-                if doi.startswith(
-                        "10.") and abstract is not None and abstract != '' and title is not None and title != '':
+                if doi.startswith("10.") and abstract is not None and abstract != '' and title is not None\
+                        and title != '':
                     corpus += [(doi, title, abstract)]
 
         return corpus

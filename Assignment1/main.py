@@ -35,8 +35,8 @@ def main(argv):
             tokenizerType = arg
 
     indexer = Indexer(collectionFile, tokenizerType)
-    indexer.getTermsInOneDoc()
-    indexer.getHighestDocFreqTerms()
+    indexer.listTermsInOneDoc()
+    indexer.listHighestDocFreqTerms()
 
 
 if __name__ == "__main__":

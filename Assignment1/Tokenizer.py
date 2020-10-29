@@ -64,7 +64,7 @@ class BetterTokenizer(Tokenizer):
             siglas_match = re.findall(r'\b(?:[A-Z]){2,}', term)
             
             if url_match:
-                if url_match[0].endswith(').'): # ex: https://www.genomedetective.com/app/typingtool/cov.
+                if url_match[0].endswith(').'): # ex: https://www.genomedetective.com/app/typingtool/cov).
                     url_match = [url_match[0][:-2]]
                 elif url_match[0].endswith('),'):
                     url_match = [url_match[0][:-2]]
@@ -75,21 +75,14 @@ class BetterTokenizer(Tokenizer):
                 elif url_match[0].endswith(')'):
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
-                #print(url_match)
             elif email_match:
-                #print(email_match)
                 self.terms += email_match
+                print(email_match)
             elif hyphen_match:
-                #print(term)
-                #print(hyphen_match)
-                #print(type(hyphen_match))
-                #print(type(self.terms))
                 self.terms += hyphen_match
-                #print(term)
             elif aphostophe_match:
-                if aphostophe_match[0].endswith('\''): # ex: https://www.genomedetective.com/app/typingtool/cov.
+                if aphostophe_match[0].endswith('\''): 
                     aphostophe_match = [aphostophe_match[0][:-1]]
-                #print(aphostophe_match)
                 self.terms += aphostophe_match
             elif acronyms_match:
                 self.terms += acronyms_match
@@ -98,13 +91,10 @@ class BetterTokenizer(Tokenizer):
             else:
                 # remove html character entities, ex: &nbsp;
                 self.terms += [re.sub(r'(&.+;)', '', term)]
-
+            
                 # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
                 self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
 
-                # dealing with extra pontuation and symbols
-                # ignoring (_) for this type of situation NC_004718.3
-                #self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
 
         self.stopWordFilter()
         self.stem()

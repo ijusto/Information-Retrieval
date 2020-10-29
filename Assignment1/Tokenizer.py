@@ -57,7 +57,7 @@ class BetterTokenizer(Tokenizer):
 
         # dealing with extra pontuation and symbols
         # ignoring (_) for this type of situation NC_004718.3
-        self.terms = [re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
+        self.terms = [re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\.\-\'\_\\\/\;\<\>\=\?\[\]\{\}\\\^\`\~\±0-9]+', '', term)
                       for term in self.terms]
 
         self.stopWordFilter()

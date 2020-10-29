@@ -14,7 +14,7 @@ def main(argv):
 
     if len(opts) != 2:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better>')
-        sys.exita()
+        sys.exit()
 
     for opt, arg in opts:
         if opt == '-h':

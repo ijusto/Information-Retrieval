@@ -6,6 +6,8 @@
 import CorpusReader
 import Tokenizer
 import timeit
+import psutil
+import os
 
 
 ## Documentation for a class.
@@ -27,15 +29,17 @@ class Indexer:
         self.index()
         stop = timeit.default_timer()
 
-        #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
+        #   a) What was the total indexing time?
         print('Indexing time - {} tokenizer: {}'.format("simple" if self.tokenizerType == "0" else "better",
                                                         stop - start))
 
-        # NOT SURE (Review)
-        # print('Memory required - {} tokenizer: {}'.format(self.col.memory_usage(index=True).sum(), self.tokenizerType))
+        # How much memory (roughly) is required to index this collection?
+        process = psutil.Process(os.getpid())
+        print('\nMemory (MB): {}').format (process.memory_info().wset/1024**2)
+        print('Memory Peak (MB): {}').format(process.memory_info().peak_wset/1024**2)
 
         #   b) What is your vocabulary size?
-        print('Vocabulary Size: {}'.format(len(self.term_map.keys())))
+        print('\nVocabulary Size: {}'.format(len(self.term_map.keys())))
 
     ## Documentation for a method.
     #  @param self The object pointer.

@@ -77,7 +77,6 @@ class BetterTokenizer(Tokenizer):
                 self.terms += url_match
             elif email_match:
                 self.terms += email_match
-                print(email_match)
             elif hyphen_match:
                 self.terms += hyphen_match
             elif aphostophe_match:

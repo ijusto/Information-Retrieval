@@ -54,9 +54,13 @@ class BetterTokenizer(Tokenizer):
             # maintain emails
             email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
             # maintain words with hyphens
-            hyphen_match = re.findall(r"[A-Za-z0-9]+(-)[A-Za-z0-9]*", term)
+            hyphen_match = re.findall(r"[A-Za-z0-9]+(-)[A-Za-z0-9]+", term)
             # maintain aphostrophes
             aphostophe_match = re.findall(r"[A-Za-z]+(')[A-Za-z]*", term)
+            # maintain acronyms
+            acronyms_match = re.findall(r'\b(?:[a-zA-Z]\.){2,}', term)
+            # maintain siglas
+            siglas_match = re.findall(r'\b(?:[A-Z]){2,}', term)
             if url_match:
                 if url_match[0].endswith('.'): # ex: https://www.genomedetective.com/app/typingtool/cov.
                     url_match = [url_match[0][:-1]]
@@ -64,16 +68,26 @@ class BetterTokenizer(Tokenizer):
             elif email_match:
                 self.terms += email_match
             elif hyphen_match:
+                print(term)
+                print(hyphen_match)
                 self.terms += hyphen_match
                 print(term)
             elif aphostophe_match:
                 self.terms += aphostophe_match
+            elif acronyms_match:
+                self.terms += acronyms_match
+            elif siglas_match:
+                self.terms += siglas_match
             else:
                 # remove html character entities, ex: &nbsp;
                 self.terms += re.sub(r'(&.+;)', '', term)
+
+                # replaces all non-alphabetic characters by a space, lowercases tokens, splits on whitespace
+                self.terms = re.sub(r'[^A-Za-z]', ' ', term.lower())
+
                 # dealing with extra pontuation and symbols
                 # ignoring (_) for this type of situation NC_004718.3
-                self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
+                #self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
 
         self.stopWordFilter()
         self.stem()

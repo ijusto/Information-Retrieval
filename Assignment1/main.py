@@ -2,18 +2,19 @@ from Indexer import Indexer
 from os import path
 import sys, getopt
 
+
 def main(argv):
     collectionFile = ''
     tokenizerType = ''
     try:
-        opts, args = getopt.getopt(argv,"hf:t:",["collectionFile=","tokenizerType="])
+        opts, args = getopt.getopt(argv, "hf:t:", ["collectionFile=", "tokenizerType="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better>')
         sys.exit()
 
     if len(opts) != 2:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better>')
-        sys.exit()
+        sys.exita()
 
     for opt, arg in opts:
         if opt == '-h':
@@ -33,14 +34,11 @@ def main(argv):
                 sys.exit()
             tokenizerType = arg
 
-    print('before')
     indexer = Indexer(collectionFile, tokenizerType)
     indexer.index()
-    print('after')
     indexer.getTermsInOneDoc()
-    print('after')
     indexer.getHighestDocFreqTerms()
-    print('after')
+
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])

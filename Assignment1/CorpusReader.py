@@ -2,8 +2,8 @@
 # each document.
 # For this assignment consider only the title and abstract fields and ignore documents with an empty abstract.
 
-import numpy as np
 import csv
+
 
 class CorpusReader:
 
@@ -20,10 +20,8 @@ class CorpusReader:
                 doi = rows[iter][3].replace("doi.org/", "").replace("http://dx.doi.org/", "")
                 title = rows[iter][2]
                 abstract = rows[iter][7]
-                if doi.startswith("10.") and abstract is not None and abstract != '' and title is not None and title != '':
+                if doi.startswith(
+                        "10.") and abstract is not None and abstract != '' and title is not None and title != '':
                     corpus += [(doi, title, abstract)]
 
         return corpus
-
-cr = CorpusReader("data/all_sources_metadata_2020-03-13.csv")
-#print(cr.readCorpus())

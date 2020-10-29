@@ -10,6 +10,7 @@ import re
 import CorpusReader
 import Stemmer
 
+
 class Tokenizer:
 
     def __init__(self, title, abstract):
@@ -62,7 +63,7 @@ class BetterTokenizer(Tokenizer):
 
         self.stopWordFilter()
         self.stem()
-        print(self.terms)
+
         return self.terms
 
     def stopWordFilter(self):

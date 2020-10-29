@@ -26,7 +26,7 @@ class Indexer:
         stop = timeit.default_timer()
 
         #   a) What was the total indexing time?
-        print('Indexing time - {} tokenizer: {}'.format("simple" if self.tokenizerType == "0" else "better",
+        print('Indexing time - {} tokenizer: {} seconds'.format("simple" if self.tokenizerType == "0" else "better",
                                                         stop - start))
 
         # How much memory (roughly) is required to index this collection?
@@ -62,10 +62,10 @@ class Indexer:
     def listTermsInOneDoc(self):
         terms_sorted = sorted(self.term_map.keys())
         results = [term for term in terms_sorted if len(self.term_map[term].keys()) == 1]
-        print('Ten first Terms in only 1 document: {}'.format(results[:10]))
+        print('\nTen first Terms in only 1 document: \n{}'.format(results[:10]))
 
     ## Lists the ten terms with highest document frequency.
     #  @param self The object pointer.
     def listHighestDocFreqTerms(self):
         doc_freq = sorted(self.term_map.keys(), key=lambda x: len(self.term_map[x].keys()))
-        print('Ten terms with highest document frequency: {}'.format(doc_freq[:10]))
+        print('\nTen terms with highest document frequency: \n{}'.format(doc_freq[:10]))

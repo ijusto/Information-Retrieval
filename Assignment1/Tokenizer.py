@@ -55,13 +55,14 @@ class BetterTokenizer(Tokenizer):
             # maintain emails
             email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
             # maintain words with hyphens
-            hyphen_match = re.findall(r"([A-Za-z0-9]+-[A-Za-z0-9]+)", term)
+            hyphen_match = re.findall(r"([A-Za-z]+-[A-Za-z]+)", term)
             # maintain aphostrophes
             aphostophe_match = re.findall(r"([A-Za-z]+'[A-Za-z]*)", term)
             # maintain acronyms
             acronyms_match = re.findall(r'\b(?:[a-zA-Z]\.){2,}', term)
             # maintain siglas
             siglas_match = re.findall(r'\b(?:[A-Z]){2,}', term)
+            
             if url_match:
                 if url_match[0].endswith('.'): # ex: https://www.genomedetective.com/app/typingtool/cov.
                     url_match = [url_match[0][:-1]]

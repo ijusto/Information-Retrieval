@@ -53,8 +53,8 @@ class Indexer:
     def getTermsInOneDoc(self):
         terms_sorted = sorted(self.term_map.keys())
 
-        simple_results = [term for term in terms_sorted if len(self.term_map[term].keys() == 1)]
-        print('Ten first Terms (1): {}'.format(simple_results[:10]))
+        results = [term for term in terms_sorted if len(self.term_map[term].keys()) == 1]
+        print('Ten first Terms (1): {}'.format(results[:10]))
 
     #   d) List the ten terms with highest document frequency.
     def getHighestDocFreqTerms(self):

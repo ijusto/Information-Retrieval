@@ -40,26 +40,26 @@ class Indexer:
             stop = timeit.default_timer()
 
             #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
-            print('Indexing time - {} tokenizer: {}').format(self.tokenizerType, stop - start)
+            print('Indexing time - {} tokenizer: {}'.format(self.tokenizerType, stop - start))
             
             # NOT SURE (Review)
-            print('Memory required - {} tokenizer: {}').format(self.tokenizerType, self.col.memory_usage(index=True).sum()) 
+            print('Memory required - {} tokenizer: {}'.format(self.tokenizerType, self.col.memory_usage(index=True).sum())) 
 
             #   b) What is your vocabulary size?simple
             self.vocab_size = len(self.token_map.keys())
-            print('Vocabulary Size: {}').format(self.vocab_size)
+            print('Vocabulary Size: {}'.format(self.vocab_size))
 
     #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     def getTermsInOneDoc(self):
         terms_sorted = sorted(self.token_map.keys())
 
         simple_results = [term for term in terms_sorted if len(self.token_map[term].keys() == 1)]
-        print('Ten first Terms (1): {}').format(simple_results[:10])
+        print('Ten first Terms (1): {}'.format(simple_results[:10]))
 
     #   d) List the ten terms with highest document frequency.
     def getHighestDocFreqTerms(self):
 
         doc_freq = sorted(self.token_map.keys(), key=lambda x: len(self.token_map[x].keys()))
-        print('Ten terms with highest document frequency: {}').format(doc_freq[:10])
+        print('Ten terms with highest document frequency: {}'.format(doc_freq[:10]))
 
 

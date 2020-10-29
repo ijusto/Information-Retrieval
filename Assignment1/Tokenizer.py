@@ -49,9 +49,7 @@ class BetterTokenizer(Tokenizer):
             # 2019-2020, COVID-19, receptor-independent
 
             # maintain websites
-            url_match = re.findall(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
-                          r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
-                          r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', term)
+            url_match = re.findall(r'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'\".,<>?«»“”‘’]))', term)
             # maintain emails
             email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
             # maintain words with hyphens
@@ -67,28 +65,34 @@ class BetterTokenizer(Tokenizer):
                 if url_match[0].endswith('.'): # ex: https://www.genomedetective.com/app/typingtool/cov.
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
+                print(term)
             elif email_match:
                 self.terms += email_match
+                #print(term)
             elif hyphen_match:
-                print(term)
-                print(hyphen_match)
-                print(type(hyphen_match))
-                print(type(self.terms))
+                #print(term)
+                #print(hyphen_match)
+                #print(type(hyphen_match))
+                #print(type(self.terms))
                 self.terms += hyphen_match
-                print(term)
+                #print(term)
             elif aphostophe_match:
                 self.terms += aphostophe_match
+                #print(term)
             elif acronyms_match:
                 self.terms += acronyms_match
+                #print(term)
             elif siglas_match:
                 self.terms += siglas_match
+                #print(term)
             else:
                 # remove html character entities, ex: &nbsp;
                 self.terms += [re.sub(r'(&.+;)', '', term)]
+                #print(term)
 
                 # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
                 self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
-
+                #print(term)
                 # dealing with extra pontuation and symbols
                 # ignoring (_) for this type of situation NC_004718.3
                 #self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)

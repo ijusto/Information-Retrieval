@@ -41,7 +41,7 @@ class Indexer:
             #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
             print('Indexing time - {} tokenizer: {}').format(self.tokenizerType, stop - start)
             
-            # NOT SURE
+            # NOT SURE (Review)
             print('Memory required - {} tokenizer: {}').format(self.tokenizerType, self.col.memory_usage(index=True).sum()) 
 
             #   b) What is your vocabulary size?simple

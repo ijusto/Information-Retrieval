@@ -1,4 +1,4 @@
-from Indexer import Indexer
+from src.Indexer import Indexer
 from os import path
 import sys, getopt
 
@@ -35,7 +35,6 @@ def main(argv):
             tokenizerType = arg
 
     indexer = Indexer(collectionFile, tokenizerType)
-    indexer.index()
     indexer.getTermsInOneDoc()
     indexer.getHighestDocFreqTerms()
 

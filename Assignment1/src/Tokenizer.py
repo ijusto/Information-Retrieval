@@ -7,7 +7,6 @@
 #       as default: https://bit.ly/2kKBCqt
 
 import re
-import CorpusReader
 import Stemmer
 
 
@@ -41,25 +40,31 @@ class BetterTokenizer(Tokenizer):
 
     def getTerms(self):
         # split by whitespace
-        self.terms = re.split('[\s]', self.title + " " + self.abstract)
+        terms = re.split('[\s]', self.title + " " + self.abstract)
 
-        # ignore websites
-        self.terms = [term for term in self.terms if not re.match(r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}'
-                                                                  r'\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|(https'
-                                                                  r'?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}'
-                                                                  r'\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)', term)
-                      # ignore emails
-                      and not re.match(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
-                      # ignore words with hyphens and aphostrophes and both
-                      # 's, yea', don't, -yeah, no-, ice-cream, Qu'est-ce, Mary's, High-school, 'tis, Chambers',
-                      # Qu'est-ce, Finland's, isn't, Passengers'
-                      # 2019-2020, COVID-19, receptor-independent
-                      and not re.match(r"'?\w[\w']*(?:-\w+)*'?", term)]
+        for term in terms:
+            # ignore websites
+            if re.match(r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|'
+                        r'(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//='
+                        r']*)', term):
+                self.terms += [term]
 
-        # dealing with extra pontuation and symbols
-        # ignoring (_) for this type of situation NC_004718.3
-        self.terms = [re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\.\-\'\_\\\/\;\<\>\=\?\[\]\{\}\\\^\`\~\±0-9]+', '', term)
-                      for term in self.terms]
+            # ignore emails
+            elif re.match(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term):
+                self.terms +=[term]
+
+            # ignore words with hyphens and aphostrophes and both
+            # 's, yea', don't, -yeah, no-, ice-cream, Qu'est-ce, Mary's, High-school, 'tis, Chambers', Qu'est-ce, Finland's, isn't, Passengers'
+            # 2019-2020, COVID-19, receptor-independent
+            elif re.match(r"'?\w[\w']*(?:-\w+)*'?", term):
+                self.terms += term
+
+            # dealing with extra pontuation and symbols
+            # ignoring (_) for this type of situation NC_004718.3
+            else:
+                self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
+
+        self.terms.remove('')
 
         self.stopWordFilter()
         self.stem()

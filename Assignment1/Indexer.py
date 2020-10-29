@@ -40,10 +40,10 @@ class Indexer:
             stop = timeit.default_timer()
 
             #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
-            print('Indexing time - {} tokenizer: {}'.format(self.tokenizerType, stop - start))
+            print('Indexing time - {} tokenizer: {}'.format(stop - start, self.tokenizerType))
             
             # NOT SURE (Review)
-            print('Memory required - {} tokenizer: {}'.format(self.tokenizerType, self.col.memory_usage(index=True).sum())) 
+            #print('Memory required - {} tokenizer: {}'.format(self.col.memory_usage(index=True).sum(), self.tokenizerType)) 
 
             #   b) What is your vocabulary size?simple
             self.vocab_size = len(self.token_map.keys())

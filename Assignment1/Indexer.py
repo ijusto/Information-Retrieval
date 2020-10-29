@@ -40,7 +40,7 @@ class Indexer:
 
         stop = timeit.default_timer()
         #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
-        print('Indexing time - {} tokenizer: {}'.format(self.tokenizerType, stop - start))
+        print('Indexing time - {} tokenizer: {}'.format("simple" if self.tokenizerType == "0" else "better", stop - start))
 
         # NOT SURE (Review)
         #print('Memory required - {} tokenizer: {}'.format(self.col.memory_usage(index=True).sum(), self.tokenizerType))

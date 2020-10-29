@@ -83,10 +83,10 @@ class BetterTokenizer(Tokenizer):
                 self.terms += siglas_match
             else:
                 # remove html character entities, ex: &nbsp;
-                self.terms += re.sub(r'(&.+;)', '', term)
+                self.terms += [re.sub(r'(&.+;)', '', term)]
 
-                # replaces all non-alphabetic characters by a space, lowercases tokens, splits on whitespace
-                self.terms = re.sub(r'[^A-Za-z]', ' ', term.lower())
+                # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
+                self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
 
                 # dealing with extra pontuation and symbols
                 # ignoring (_) for this type of situation NC_004718.3

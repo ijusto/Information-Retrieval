@@ -64,18 +64,27 @@ class BetterTokenizer(Tokenizer):
             siglas_match = re.findall(r'\b(?:[A-Z]){2,}', term)
             
             if url_match:
-                if url_match[0].endswith('.'): # ex: https://www.genomedetective.com/app/typingtool/cov.
+                if url_match[0].endswith(').'): # ex: https://www.genomedetective.com/app/typingtool/cov.
+                    url_match = [url_match[0][:-2]]
+                elif url_match[0].endswith('),'):
+                    url_match = [url_match[0][:-2]]
+                elif url_match[0].endswith(','):
+                    url_match = [url_match[0][:-1]]
+                elif url_match[0].endswith('.'):
+                    url_match = [url_match[0][:-1]]
+                elif url_match[0].endswith(')'):
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
+                print(url_match)
             elif email_match:
                 self.terms += email_match
             elif hyphen_match:
-                print(term)
-                print(hyphen_match)
-                print(type(hyphen_match))
-                print(type(self.terms))
+                #print(term)
+                #print(hyphen_match)
+                #print(type(hyphen_match))
+                #print(type(self.terms))
                 self.terms += hyphen_match
-                print(term)
+                #print(term)
             elif aphostophe_match:
                 self.terms += aphostophe_match
             elif acronyms_match:

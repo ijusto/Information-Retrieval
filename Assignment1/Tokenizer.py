@@ -77,7 +77,7 @@ class BetterTokenizer(Tokenizer):
                 self.terms += url_match
                 #print(url_match)
             elif email_match:
-                print(email_match)
+                #print(email_match)
                 self.terms += email_match
             elif hyphen_match:
                 #print(term)
@@ -87,6 +87,9 @@ class BetterTokenizer(Tokenizer):
                 self.terms += hyphen_match
                 #print(term)
             elif aphostophe_match:
+                if aphostophe_match[0].endswith('\''): # ex: https://www.genomedetective.com/app/typingtool/cov.
+                    aphostophe_match = [aphostophe_match[0][:-1]]
+                #print(aphostophe_match)
                 self.terms += aphostophe_match
             elif acronyms_match:
                 self.terms += acronyms_match

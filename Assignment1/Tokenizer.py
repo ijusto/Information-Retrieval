@@ -53,7 +53,7 @@ class BetterTokenizer(Tokenizer):
                           r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
                           r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', term)
             # maintain emails
-            email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
+            email_match = re.findall(r'[\w\.-]+@[\w\.-]+', term)
             # maintain words with hyphens
             hyphen_match = re.findall(r"([A-Za-z]+-[A-Za-z]+)", term)
             # maintain aphostrophes
@@ -75,8 +75,9 @@ class BetterTokenizer(Tokenizer):
                 elif url_match[0].endswith(')'):
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
-                print(url_match)
+                #print(url_match)
             elif email_match:
+                print(email_match)
                 self.terms += email_match
             elif hyphen_match:
                 #print(term)

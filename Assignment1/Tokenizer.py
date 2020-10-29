@@ -55,7 +55,7 @@ class BetterTokenizer(Tokenizer):
             # maintain emails
             email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
             # maintain words with hyphens
-            hyphen_match = re.findall(r"([A-Za-z0-9]+-[A-Za-z0-9]+)", term)
+            hyphen_match = re.findall(r"([A-Za-z]+-[A-Za-z]+)", term)
             # maintain aphostrophes
             aphostophe_match = re.findall(r"([A-Za-z]+'[A-Za-z]*)", term)
             # maintain acronyms
@@ -70,12 +70,12 @@ class BetterTokenizer(Tokenizer):
             elif email_match:
                 self.terms += email_match
             elif hyphen_match:
-                #print(term)
-                #print(hyphen_match)
-                #print(type(hyphen_match))
-                #print(type(self.terms))
+                print(term)
+                print(hyphen_match)
+                print(type(hyphen_match))
+                print(type(self.terms))
                 self.terms += hyphen_match
-                #print(term)
+                print(term)
             elif aphostophe_match:
                 self.terms += aphostophe_match
             elif acronyms_match:
@@ -92,8 +92,11 @@ class BetterTokenizer(Tokenizer):
                 # dealing with extra pontuation and symbols
                 # ignoring (_) for this type of situation NC_004718.3
                 #self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
-\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
-self.terms
+
+        self.stopWordFilter()
+        self.stem()
+
+        return self.terms
 
     def stopWordFilter(self):
         # get the english stopwords

@@ -1,23 +1,29 @@
-# 3. Create an indexing pipeline. Use a suitable data structure for the index, defined by you.
+## @package pyexample
+#  Documentation for this module.
+#
+#  More details.
 
-# 4. Index the corpus using each tokenizer above and answer the following questions:
-#   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
-#   b) What is your vocabulary size?
-#   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
-#   d) List the ten terms with highest document frequency.
 import CorpusReader
 import Tokenizer
 import timeit
 
-
+## Documentation for a class.
+#
+#  More details.
 class Indexer:
 
+    ## The constructor.
+    #  @param self The object pointer.
+    #  @param collection The path to the csv containing the collection
+    #  @param tokenizerType The type of tokenizing to do to each document
     def __init__(self, collection, tokenizerType):
         self.col = CorpusReader.CorpusReader(collection).readCorpus()  # list((doi, title, abstract))
         self.term_map = {}  # key: term, value: doc_freq_map (key: doi, value: term_freq)
         self.vocab_size = 0
         self.tokenizerType = tokenizerType
 
+    ## Documentation for a method.
+    #  @param self The object pointer.
     def index(self):
         start = timeit.default_timer()
         for doi, title, abstract in self.col:
@@ -50,12 +56,16 @@ class Indexer:
         self.vocab_size = len(self.term_map.keys())
         print('Vocabulary Size: {}'.format(self.vocab_size))
 
+    ## Documentation for a method.
+    #  @param self The object pointer.
     #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     def getTermsInOneDoc(self):
         terms_sorted = sorted(self.term_map.keys())
         results = [term for term in terms_sorted if len(self.term_map[term].keys()) == 1]
         print('Ten first Terms in only 1 document: {}'.format(results[:10]))
 
+    ## Documentation for a method.
+    #  @param self The object pointer.
     #   d) List the ten terms with highest document frequency.
     def getHighestDocFreqTerms(self):
         doc_freq = sorted(self.term_map.keys(), key=lambda x: len(self.term_map[x].keys()))

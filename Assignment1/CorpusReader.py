@@ -11,12 +11,17 @@ class CorpusReader:
         self.csv = csv
 
     def readCorpus(self):
+        corpus = []
         with open(self.csv) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             rows = list(csv_reader)
             # doi, title, abstract
-            corpus = [(rows[iter][3], rows[iter][2], rows[iter][7]) for iter in range(len(rows))
-                             if rows[iter][7] is not None and rows[iter][7] != '' and rows[iter][0] != '']
+            for iter in range(len(rows)):
+                doi = rows[iter][3].replace("doi.org/", "").replace("http://dx.doi.org/", "")
+                title = rows[iter][2]
+                abstract = rows[iter][7]
+                if doi.startswith("10.") and abstract is not None and abstract != '' and title is not None and title != '':
+                    corpus += [(doi, title, abstract)]
 
         return corpus
 

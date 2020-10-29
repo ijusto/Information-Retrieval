@@ -38,6 +38,7 @@ class Indexer:
                     term_freq_map[doi] = 1
                     self.term_map[term] = term_freq_map
 
+        print(self.term_map)
         stop = timeit.default_timer()
         #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
         print('Indexing time - {} tokenizer: {}'.format("simple" if self.tokenizerType == "0" else "better", stop - start))

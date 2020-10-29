@@ -36,7 +36,8 @@ def main(argv):
             tokenizerType = arg
 
     print('before')
-    indexer = Indexer(collectionFile, tokenizerType).index()
+    indexer = Indexer(collectionFile, tokenizerType)
+    indexer.index()
     print('after')
     indexer.getTermsInOneDoc()
     print('after')

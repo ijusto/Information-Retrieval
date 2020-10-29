@@ -13,7 +13,7 @@ class Indexer:
 
     def __init__(self, collection, tokenizerType):
         self.col = CorpusReader.CorpusReader(collection).readCorpus() # list((doi, title, abstract))
-        self.token_map = {}  # key: token, value: doc_freq_map
+        self.term_map = {}  # key: term, value: doc_freq_map (key: doi, value: term_freq)
         self.vocab_size = 0
         self.tokenizerType = tokenizerType
 
@@ -28,15 +28,15 @@ class Indexer:
             terms = tokenizer.getTerms()
             start = timeit.default_timer()
             for term in terms:
-                if term in self.token_map.keys():
-                    if doi in self.token_map[term].keys():
-                        self.token_map[term][doi] += 1
+                if term in self.term_map.keys():
+                    if doi in self.term_map[term].keys():
+                        self.term_map[term][doi] += 1
                     else:
-                        self.token_map[term][doi] = 1
+                        self.term_map[term][doi] = 1
                 else:
-                    token_freq_map = {}  # key: docId, value: token_freq
-                    token_freq_map[doi] = 1
-                    self.token_map[term] = token_freq_map[doi]
+                    term_freq_map = {}  # key: docId, value: term_freq
+                    term_freq_map[doi] = 1
+                    self.term_map[term] = term_freq_map
             stop = timeit.default_timer()
 
             #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
@@ -46,20 +46,20 @@ class Indexer:
             #print('Memory required - {} tokenizer: {}'.format(self.col.memory_usage(index=True).sum(), self.tokenizerType)) 
 
             #   b) What is your vocabulary size?simple
-            self.vocab_size = len(self.token_map.keys())
+            self.vocab_size = len(self.term_map.keys())
             print('Vocabulary Size: {}'.format(self.vocab_size))
 
     #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     def getTermsInOneDoc(self):
-        terms_sorted = sorted(self.token_map.keys())
+        terms_sorted = sorted(self.term_map.keys())
 
-        simple_results = [term for term in terms_sorted if len(self.token_map[term].keys() == 1)]
+        simple_results = [term for term in terms_sorted if len(self.term_map[term].keys() == 1)]
         print('Ten first Terms (1): {}'.format(simple_results[:10]))
 
     #   d) List the ten terms with highest document frequency.
     def getHighestDocFreqTerms(self):
 
-        doc_freq = sorted(self.token_map.keys(), key=lambda x: len(self.token_map[x].keys()))
+        doc_freq = sorted(self.term_map.keys(), key=lambda x: len(self.term_map[x].keys()))
         print('Ten terms with highest document frequency: {}'.format(doc_freq[:10]))
 
 

@@ -46,13 +46,14 @@ class Indexer:
 
             #   b) What is your vocabulary size?simple
             self.vocab_size = len(self.token_map.keys())
+            print('Vocabulary Size: {}').format(self.vocab_size)
 
     #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     def getTermsInOneDoc(self):
         terms_sorted = sorted(self.token_map.keys())
 
         simple_results = [term for term in terms_sorted if len(self.token_map[term].keys() == 1)]
-        print('Ten first Terms : {}').format(simple_results[:10])
+        print('Ten first Terms (1): {}').format(simple_results[:10])
 
     #   d) List the ten terms with highest document frequency.
     def getHighestDocFreqTerms(self):

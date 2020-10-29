@@ -1,4 +1,4 @@
-from src.Indexer import Indexer
+from Indexer import Indexer
 from os import path
 import sys, getopt
 

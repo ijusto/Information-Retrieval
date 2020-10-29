@@ -3,8 +3,8 @@
 #
 #  More details.
 
-from src import CorpusReader
-from src import Tokenizer
+import CorpusReader
+import Tokenizer
 import timeit
 
 

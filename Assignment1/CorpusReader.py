@@ -14,7 +14,8 @@ class CorpusReader:
         with open(self.csv) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             rows = list(csv_reader)
-            corpus = [(rows[iter][0], rows[iter][2], rows[iter][7]) for iter in range(len(rows))
+            # doi, title, abstract
+            corpus = [(rows[iter][3], rows[iter][2], rows[iter][7]) for iter in range(len(rows))
                              if rows[iter][7] is not None and rows[iter][7] != '' and rows[iter][0] != '']
 
         return corpus

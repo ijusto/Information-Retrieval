@@ -7,28 +7,54 @@
 #   d) List the ten terms with highest document frequency.
 import CorpusReader
 import Tokenizer
+import timeit
 
 class Indexer:
 
-    def __init__(self, file):
-        self.simple_tokenizer = Tokenizer.SimpleTokenizer(file)
-        self.better_tokenizer = Tokenizer.BetterTokenizer(file)
-        
-
-        doc_list = CorpusReader.CorpusReader(file).readCorpus()
-        sha_table = {}
-        count = -1
-        doc_map = {}
-        for (sha, title, abst) in doc_list:
-            count += 1
-            sha_table[sha] = count
-            doc_map[count] = (title, abst)
-
-        self.simple_tokenizer.readTokens(doc_map)
-        self.better_tokenizer.readTokens(doc_map)
-        self.better_tokenizer.createTerms(doc_map)
-       
+    def __init__(self, collection, tokenizerType):
+        self.col = CorpusReader.CorpusReader(collection).readCorpus() # list((doi, title, abstract))
+        self.token_map = {}  # key: token, value: doc_freq_map
+        self.vocab_size = 0
+        self.tokenizerType = tokenizerType
 
     def index(self):
-        print('passs')
-        pass
+        for doi, title, abstract in self.col:
+            if self.tokenizerType == 0: # simple
+                tokenizer = Tokenizer.SimpleTokenizer(title, abstract)
+            else: # better
+                tokenizer = Tokenizer.BetterTokenizer(title, abstract)
+
+            terms = tokenizer.getTerms()
+            start = timeit.default_timer()
+            for term in terms:
+                if term in self.token_map.keys():
+                    if doi in self.token_map[term].keys():
+                        self.token_map[term][doi] += 1
+                    else:
+                        self.token_map[term][doi] = 1
+                else:
+                    token_freq_map = {}  # key: docId, value: token_freq
+                    token_freq_map[doi] = 1
+                    self.token_map[term] = token_freq_map[doi]
+            stop = timeit.default_timer()
+
+            #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
+            print('Indexing time - {} tokenizer: {}').format(self.tokenizerType, stop - start)
+
+            #   b) What is your vocabulary size?simple
+            self.vocab_size = len(self.token_map.keys())
+
+    #   c) List the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
+    def getTermsInOneDoc(self):
+        terms_sorted = sorted(self.token_map.keys())
+
+        simple_results = [term for term in terms_sorted if len(self.token_map[term].keys() == 1)]
+        # TODO: prints
+
+    #   d) List the ten terms with highest document frequency.
+    def getHighestDocFreqTerms(self):
+
+        doc_freq = sorted(self.token_map.keys(), key=lambda x: len(self.token_map[x].keys()))
+        # TODO: prints
+
+

@@ -18,6 +18,7 @@ class Indexer:
         self.tokenizerType = tokenizerType
 
     def index(self):
+        print('index')
         for doi, title, abstract in self.col:
             if self.tokenizerType == 0: # simple
                 tokenizer = Tokenizer.SimpleTokenizer(title, abstract)

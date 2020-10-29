@@ -43,28 +43,28 @@ class BetterTokenizer(Tokenizer):
         terms = re.split('[\s]', self.title + " " + self.abstract)
 
         for term in terms:
-            # ignore websites
-            if re.match(r'(https?:\/\/)?(www\.)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)|'
-                        r'(https?:\/\/)?(www\.)?(?!ww)[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//='
-                        r']*)', term):
-                self.terms += [term]
-
-            # ignore emails
-            elif re.match(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term):
-                self.terms +=[term]
-
-            # ignore words with hyphens and aphostrophes and both
+            # maintain websites
+            # maintain emails
+            # maintain words with hyphens and aphostrophes and both
             # 's, yea', don't, -yeah, no-, ice-cream, Qu'est-ce, Mary's, High-school, 'tis, Chambers', Qu'est-ce, Finland's, isn't, Passengers'
             # 2019-2020, COVID-19, receptor-independent
-            elif re.match(r"'?\w[\w']*(?:-\w+)*'?", term):
-                self.terms += term
-
-            # dealing with extra pontuation and symbols
-            # ignoring (_) for this type of situation NC_004718.3
+            url_match = re.findall(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
+                          r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
+                          r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', term)
+            email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
+            hyphen_match = re.findall(r"'?\w[\w']*(?:-\w+)*'?", term)
+            if url_match:
+                self.terms += url_match
+            elif email_match:
+                self.terms += email_match
+            elif hyphen_match:
+                self.terms += hyphen_match
             else:
+                # remove html character entities, ex: &nbsp;
+                self.terms += re.sub(r'(&.+;)', '', term)
+                # dealing with extra pontuation and symbols
+                # ignoring (_) for this type of situation NC_004718.3
                 self.terms += re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
-
-        self.terms.remove('')
 
         self.stopWordFilter()
         self.stem()

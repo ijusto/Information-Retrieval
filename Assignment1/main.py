@@ -16,8 +16,6 @@ def main(argv):
         sys.exit()
 
     for opt, arg in opts:
-        print(opt)
-        print(arg)
         if opt == '-h':
             print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better>')
             sys.exit()

@@ -58,7 +58,7 @@ class BetterTokenizer(Tokenizer):
         # dealing with extra pontuation and symbols
         # ignoring (_) for this type of situation NC_004718.3
         self.terms = [re.sub(r'[\!\"\#\$\%\&\(\)\*\+\,\:\;\<\>\=\?\[\]\{\}\\\^\`\~\±]+', '', term)
-                      for term in self.terms].remove('')
+                      for term in self.terms]
 
         self.stopWordFilter()
         self.stem()
@@ -67,7 +67,7 @@ class BetterTokenizer(Tokenizer):
 
     def stopWordFilter(self):
         # get the english stopwords
-        stopwords = ""
+        stopwords = []
         with open('snowball_stopwords_EN.txt', 'r') as document:
             stopwords += list(filter(None, re.split("[ \n]", document.read())))
         document.close()

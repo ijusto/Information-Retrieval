@@ -40,6 +40,9 @@ class Indexer:
 
             #   a) What was the total indexing time and how much memory (roughly) is required to index this collection?
             print('Indexing time - {} tokenizer: {}').format(self.tokenizerType, stop - start)
+            
+            # NOT SURE
+            print('Memory required - {} tokenizer: {}').format(self.tokenizerType, self.col.memory_usage(index=True).sum()) 
 
             #   b) What is your vocabulary size?simple
             self.vocab_size = len(self.token_map.keys())
@@ -49,12 +52,12 @@ class Indexer:
         terms_sorted = sorted(self.token_map.keys())
 
         simple_results = [term for term in terms_sorted if len(self.token_map[term].keys() == 1)]
-        # TODO: prints
+        print('Ten first Terms : {}').format(simple_results[:10])
 
     #   d) List the ten terms with highest document frequency.
     def getHighestDocFreqTerms(self):
 
         doc_freq = sorted(self.token_map.keys(), key=lambda x: len(self.token_map[x].keys()))
-        # TODO: prints
+        print('Ten terms with highest document frequency: {}').format(doc_freq[:10])
 
 

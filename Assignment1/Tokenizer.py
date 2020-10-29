@@ -8,7 +8,7 @@
 
 import re
 import Stemmer
-
+import sys
 
 class Tokenizer:
 
@@ -43,22 +43,31 @@ class BetterTokenizer(Tokenizer):
         terms = re.split('[\s]', self.title + " " + self.abstract)
 
         for term in terms:
-            # maintain websites
-            # maintain emails
             # maintain words with hyphens and aphostrophes and both
             # 's, yea', don't, -yeah, no-, ice-cream, Qu'est-ce, Mary's, High-school, 'tis, Chambers', Qu'est-ce, Finland's, isn't, Passengers'
             # 2019-2020, COVID-19, receptor-independent
+
+            # maintain websites
             url_match = re.findall(r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
                           r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
                           r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', term)
+            # maintain emails
             email_match = re.findall(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', term)
-            hyphen_match = re.findall(r"'?\w[\w']*(?:-\w+)*'?", term)
+            # maintain words with hyphens
+            hyphen_match = re.findall(r"[A-Za-z0-9]+(-)[A-Za-z0-9]*", term)
+            # maintain aphostrophes
+            aphostophe_match = re.findall(r"[A-Za-z]+(')[A-Za-z]*", term)
             if url_match:
+                if url_match[0].endswith('.'): # ex: https://www.genomedetective.com/app/typingtool/cov.
+                    url_match = [url_match[0][:-1]]
                 self.terms += url_match
             elif email_match:
                 self.terms += email_match
             elif hyphen_match:
                 self.terms += hyphen_match
+                print(term)
+            elif aphostophe_match:
+                self.terms += aphostophe_match
             else:
                 # remove html character entities, ex: &nbsp;
                 self.terms += re.sub(r'(&.+;)', '', term)

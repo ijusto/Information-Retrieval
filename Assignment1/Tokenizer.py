@@ -108,7 +108,7 @@ class BetterTokenizer(Tokenizer):
 
         self.stopWordFilter()
         self.stem()
-
+        self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
         return self.terms
 
     ## Removes stopwords from the list of the terms of the document.

@@ -30,9 +30,7 @@ class Indexer:
                                                         stop - start))
 
         # How much memory (roughly) is required to index this collection?
-        process = psutil.Process(os.getpid())
-        print(process.memory_info().wset/1024**2)
-        print(process.memory_info().peak_wset/1024**2)
+        
 
         #   b) What is your vocabulary size?
         print('\nVocabulary Size: {}'.format(len(self.term_map.keys())))

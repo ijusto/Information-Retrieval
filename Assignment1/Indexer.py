@@ -1,7 +1,6 @@
-## @package pyexample
-#  Documentation for this module.
-#
-#  More details.
+## Indexer
+#  @author Inês Justo, 84804
+#  @author Daniel Marques, 85070
 
 import CorpusReader
 import Tokenizer

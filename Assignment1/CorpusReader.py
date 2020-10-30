@@ -1,8 +1,9 @@
-## @package src
 #  Corpus reader that iterates over the collection (corpus) of a document and returns, in turn, the contents of each
 #  document.
 #
 #  For this assignment it's only used the title and abstract fields and documents with an empty abstract are ignored.
+#  @author Inês Justo, 84804
+#  @author Daniel Marques, 85070
 
 
 import csv

@@ -1,6 +1,9 @@
+## Tokenizer
+#  @author Inês Justo, 84804
+#  @author Daniel Marques, 85070
+
 import re
 import Stemmer
-import sys
 
 
 class Tokenizer:

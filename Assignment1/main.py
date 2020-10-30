@@ -1,3 +1,7 @@
+## Main program.
+#  @author Inês Justo, 84804
+#  @author Daniel Marques, 85070
+
 from Indexer import Indexer
 from os import path
 import sys, getopt

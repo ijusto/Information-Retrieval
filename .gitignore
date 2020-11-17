@@ -1,30 +1,13 @@
 
-Lab01/__pycache__/
-
-Lab01/.idea/
-
-Assignment1/data/
-
-Assignment1/RI_assignment1.pdf
-
-Assignment1/.idea/
+__pycache__/
 
 .idea/
 
-Assignment1/snowball_web_and_code/
+data/
 
-Lab01/IR1_Overview.pdf
+*.pdf
 
-Lab01/IR2_BooleanRetrieval.pdf
+*.zip
 
-Lab02/IR3_TextProcessing.pdf
+slides/
 
-Lab02/IR4_Indexing.pdf
-
-Lab03/
-
-Assignment1/__pycache__/
-
-Assignment1/html/
-
-84804_85070.zipp

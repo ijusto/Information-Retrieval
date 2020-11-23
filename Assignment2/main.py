@@ -1,10 +1,12 @@
-## Main program.
+# Main program.
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 
-from Indexer import Indexer
+import getopt
+import sys
 from os import path
-import sys, getopt
+
+from Indexer import Indexer
 
 
 def main(argv):
@@ -41,6 +43,7 @@ def main(argv):
     indexer = Indexer(collectionFile, tokenizerType)
     indexer.listTermsInOneDoc()
     indexer.listHighestDocFreqTerms()
+    indexer.listHighestOneDocFreqTerms()
 
 
 if __name__ == "__main__":

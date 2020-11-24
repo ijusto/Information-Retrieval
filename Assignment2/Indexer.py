@@ -89,10 +89,18 @@ class Indexer:
 
         self.dictionaryCompression(allTerms)
 
-        # then, we modify the dictionaries {docId: termFreq} in the postingsMaps list to {docId: weight (with length normalization)}
-        for termInd in range(len(self.postingsMaps)):
-            for docId in self.postingsMaps[termInd].keys():
-                self.postingsMaps[termInd][docId] = self.getTFIDFtWeight(termInd, docId) / self.getDocL2Norm(docId)
+        # then, we modify the dictionaries {docId: termFreq} in the postingsMaps list to
+        # {docId: weight (with length normalization)}
+        # lnc (logarithmic term frequency, no document frequency, cosine normalization)
+        # logarithmic term frequency
+        self.postingsMaps = [0 if self.getTFtd(termInd, docId) <= 0
+                                else (1 + math.log10(self.getTFtd(termInd, docId)))
+                                for termInd in range(len(self.postingsMaps))
+                                for docId in self.postingsMaps[termInd].keys()]
+        # cosine normalization
+        self.postingsMaps = [self.postingsMaps[termInd][docId] / self.getDocL2Norm(docId)
+                                for termInd in range(len(self.postingsMaps))
+                                for docId in self.postingsMaps[termInd].keys()]
 
     # The search begins with the dictionary.
     # We want to keep it in memory .
@@ -214,7 +222,7 @@ class Indexer:
     #  @param dId The document id.
     #  @returns the term frequency TF(t,d) of term t in document d
     def getTFtd(self, tIndex, dId):
-        return self.postingsMaps[tIndex][dId]
+        return 0 if tIndex < 0 else self.postingsMaps[tIndex][dId]
 
     # Returns the number of occurrences of the term t occurs in the collection, counting multiple occurrences
     #  @param self The object pointer.
@@ -228,7 +236,7 @@ class Indexer:
     #  @param tIndex The term index.
     #  @returns df(t) - the document frequency of term t
     def getDFt(self, tIndex):
-        return len(list(self.postingsMaps[tIndex].keys()))
+        return 1 if tIndex < 0 else len(list(self.postingsMaps[tIndex].keys()))
 
     # Returns the inverse document frequency of term t
     #  @param self The object pointer.
@@ -242,13 +250,20 @@ class Indexer:
     #  @param tIndex The term index.
     #  @param dId The document id.
     #  @returns W(t,d) - the term frequency-inverse document frequency weight of term t in document d
+    # todo: before calling this function for queries, verify if the term is in the collenction (dictionary)
+    #   if not, pass the tIndex = -1
     def getTFIDFtWeight(self, tIndex, dId):
         tf = self.getTFtd(tIndex, dId)
-        return 0 if tf <= 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex)
+        return 0 if tf == 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex)
 
     def getDocL2Norm(self, docId):
         return math.sqrt(sum([math.pow(postings[docId], 2) for postings in self.postingsMaps
                               if docId in postings.keys()]))
+
+    def getCosine2Docs(self, docId1, docId2):
+        weightsDoc1 = [postings[docId1] for postings in self.postingsMaps if docId1 in postings.keys()]
+        weightsDoc2 = [postings[docId2] for postings in self.postingsMaps if docId2 in postings.keys()]
+        return sum([w1 * w2 for w1, w2 in zip(weightsDoc1, weightsDoc2)])
 
     # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     #  @param self The object pointer.

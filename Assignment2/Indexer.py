@@ -9,6 +9,7 @@ import psutil
 import os
 import math
 
+
 # Indexer
 class Indexer:
 
@@ -23,10 +24,11 @@ class Indexer:
         # store dictionary as a (long) string of characters with the length of each term preceding it
         # front coding
         self.dictStr = ""
-        # list of dictionaries {docId: term_freq} for each term (postings with term_freq), (length = number of terms)
+        # list of dictionaries {docId: term_tfidfweigth} for each term (postings with term_tfidfweigth),
+        # (length = number of terms)
         self.postingsMaps = []
         # list of document frequencies, (length = number of terms)
-        #self.docFreq = []
+        # self.docFreq = []
         # list of pointers/indexes to terms in the dictionary string (after blocking, length < number of terms)
         # with blocking
         self.termPtrs = []
@@ -37,6 +39,7 @@ class Indexer:
         self.k = 4
         # total number of documents in the collection
         self.N = 0
+
         self.index()
         stop = timeit.default_timer()
 
@@ -50,11 +53,9 @@ class Indexer:
 
         #   b) What is your vocabulary size?
         print('\nVocabulary Size: {}'.format(len(self.postingsMaps)))
-        #print('\nVocabulary Size: {}'.format(len(self.docFreq)))
+        # print('\nVocabulary Size: {}'.format(len(self.docFreq)))
 
-
-    # Populates the term_map dictionary with another dictionary with doi's as keys and the term's frequency in that
-    # document
+    #  todo: description
     #  @param self The object pointer.
     def index(self):
 
@@ -62,6 +63,8 @@ class Indexer:
 
         collection = CorpusReader.CorpusReader(self.collectionPath).readCorpus()  # list((doi, title, abstract))
         self.N = len(collection)
+
+        # first, we populate the dictionaries {docId: termFreq} in the postingsMaps list
         for doi, title, abstract in collection:
             if self.tokenizerType == '0':  # simple
                 tokenizer = Tokenizer.SimpleTokenizer(title, abstract)
@@ -86,15 +89,18 @@ class Indexer:
 
         self.dictionaryCompression(allTerms)
 
+        # then, we modify the dictionaries {docId: termFreq} in the postingsMaps list to {docId: weight (with length normalization)}
+        for termInd in range(len(self.postingsMaps)):
+            for docId in self.postingsMaps[termInd].keys():
+                self.postingsMaps[termInd][docId] = self.getTFIDFtWeight(termInd, docId) / self.getDocL2Norm(docId)
 
     # The search begins with the dictionary.
     # We want to keep it in memory .
     # Even if the dictionary isn't in memory, we want it to be small for a fast search start up time
     def dictionaryCompression(self, allTerms):
-
         # terms in alphabetical order
         self.postingsMaps = sortListByTerms(allTerms, self.postingsMaps)
-        #self.docFreq = sortListByTerms(allTerms, self.docFreq)
+        # self.docFreq = sortListByTerms(allTerms, self.docFreq)
         self.postingsPtrs = sortListByTerms(allTerms, self.postingsPtrs)
         terms = sorted(allTerms)
         # store dictionary as a (long) string of characters with the length of each term preceding it
@@ -229,7 +235,7 @@ class Indexer:
     #  @param tIndex The term index.
     #  @returns idf(t) - the inverse document frequency of term t
     def getIDFt(self, tIndex):
-        return math.log10(self.N/self.getDFt(tIndex))
+        return math.log10(self.N / self.getDFt(tIndex))
 
     # Returns the tf-idf weight of a term in a document (W(t,d))
     #  @param self The object pointer.
@@ -239,6 +245,10 @@ class Indexer:
     def getTFIDFtWeight(self, tIndex, dId):
         tf = self.getTFtd(tIndex, dId)
         return 0 if tf <= 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex)
+
+    def getDocL2Norm(self, docId):
+        return math.sqrt(sum([math.pow(postings[docId], 2) for postings in self.postingsMaps
+                              if docId in postings.keys()]))
 
     # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     #  @param self The object pointer.

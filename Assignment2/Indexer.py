@@ -7,7 +7,7 @@ import Tokenizer
 import timeit
 import psutil
 import os
-
+import math
 
 # Indexer
 class Indexer:
@@ -27,7 +27,7 @@ class Indexer:
         # list of dictionaries {docId: term_freq} for each term (postings with term_freq), (length = number of terms)
         self.postingsMaps = []
         # list of document frequencies, (length = number of terms)
-        self.docFreq = []
+        #self.docFreq = []
         # list of pointers/indexes to terms in the dictionary string (after blocking, length < number of terms)
         # with blocking
         self.termPtrs = []
@@ -49,7 +49,9 @@ class Indexer:
         print('\nMemory required for indexing: {} MB'.format(process.memory_info().rss / 1000000))  # rss in bytes
 
         #   b) What is your vocabulary size?
-        print('\nVocabulary Size: {}'.format(len(self.docFreq)))
+        print('\nVocabulary Size: {}'.format(len(self.postingsMaps)))
+        #print('\nVocabulary Size: {}'.format(len(self.docFreq)))
+
 
     # Populates the term_map dictionary with another dictionary with doi's as keys and the term's frequency in that
     # document
@@ -71,37 +73,17 @@ class Indexer:
                     if doi in self.postingsMaps[allTerms.index(term)].keys():
                         self.postingsMaps[allTerms.index(term)][doi] += 1
                     else:
-                        self.docFreq[allTerms.index(term)] += 1
+                        # self.docFreq[allTerms.index(term)] += 1
                         self.postingsMaps[allTerms.index(term)][doi] = 1
                 else:
                     allTerms += [term]
                     self.postingsPtrs += [len(allTerms) - 1]
                     term_freq_map = {doi: 1}  # key: docId, value: term_freq
                     self.postingsMaps += [term_freq_map]
-                    self.docFreq += [1]
+                    # self.docFreq += [1]
 
         self.dictionaryCompression(allTerms)
 
-    # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
-    #  @param self The object pointer.
-    def listTermsInOneDoc(self):
-        terms = self.getTermsFromDictStr()
-        results = [term for term in sorted(terms) if self.docFreq[terms.index(term)] == 1]
-        print('\nTen first Terms in only 1 document: \n{}'.format(results[:10]))
-
-    # Lists the ten terms with highest document frequency.
-    #  @param self The object pointer.
-    def listHighestDocFreqTerms(self):
-        terms = self.getTermsFromDictStr()
-        doc_freq = sorted(terms, key=lambda term: self.docFreq[terms.index(term)], reverse=True)
-        print('\nTen terms with highest document frequency: \n{}'.format(doc_freq[:10]))
-
-    # Lists the ten terms with highest frequency in one document.
-    #  @param self The object pointer.
-    def listHighestOneDocFreqTerms(self):
-        terms = self.getTermsFromDictStr()
-        doc_freq = sorted(terms, key=lambda term: max(self.postingsMaps[terms.index(term)].values()), reverse=True)
-        print('\nTen terms with highest frequency in one document: \n{}'.format(doc_freq[:10]))
 
     # The search begins with the dictionary.
     # We want to keep it in memory .
@@ -109,9 +91,9 @@ class Indexer:
     def dictionaryCompression(self, allTerms):
 
         # terms in alphabetical order
-        self.postingsMaps = [pm for _, pm in sorted(zip(allTerms, self.postingsMaps))]
-        self.docFreq = [df for _, df in sorted(zip(allTerms, self.docFreq))]
-        self.postingsPtrs = [pp for _, pp in sorted(zip(allTerms, self.postingsPtrs))]
+        self.postingsMaps = sortListByTerms(allTerms, self.postingsMaps)
+        #self.docFreq = sortListByTerms(allTerms, self.docFreq)
+        self.postingsPtrs = sortListByTerms(allTerms, self.postingsPtrs)
         terms = sorted(allTerms)
         # store dictionary as a (long) string of characters with the length of each term preceding it
         self.dictStr = ""
@@ -155,7 +137,7 @@ class Indexer:
                 self.dictStr += lenTerm + terms[i]
                 encodedTerm = ""
 
-    def getTermsFromDictStr(self):
+    def getTermsFromDictStr(self) -> list:
         terms = []
 
         for ptrInd in range(len(self.termPtrs)):
@@ -216,3 +198,71 @@ class Indexer:
 
     def postingsGammaEncoded(self):
         pass
+
+    # Returns the number of times that the term t occurs in the document d, i.e., the term frequency TF(t,d) of term t
+    # in document d
+    #  @param self The object pointer.
+    #  @param tIndex The term index.
+    #  @param dId The document id.
+    #  @returns the term frequency TF(t,d) of term t in document d
+    def getTFtd(self, tIndex, dId):
+        return self.postingsMaps[tIndex][dId]
+
+    # Returns the number of occurrences of the term t occurs in the collection, counting multiple occurrences
+    #  @param self The object pointer.
+    #  @param tIndex The term index.
+    #  @returns the collection frequency of term t
+    def getCollectionFreq(self, tIndex):
+        return sum([self.postingsMaps[tIndex][docId] for docId in self.postingsMaps[tIndex].keys()])
+
+    # Returns the number of documents that contain the term t
+    #  @param self The object pointer.
+    #  @param tIndex The term index.
+    #  @returns df(t) - the document frequency of term t
+    def getDFt(self, tIndex):
+        return len(list(self.postingsMaps[tIndex].keys()))
+
+    # Returns the inverse document frequency of term t
+    #  @param self The object pointer.
+    #  @param tIndex The term index.
+    #  @param N # todo: N??
+    #  @returns idf(t) - the inverse document frequency of term t
+    def getIDFt(self, tIndex, N):
+        return math.log10(N/self.getDFt(tIndex))
+
+    # Returns the tf-idf weight of a term in a document (W(t,d))
+    #  @param self The object pointer.
+    #  @param tIndex The term index.
+    #  @param dId The document id.
+    #  @param N # todo: N??
+    #  @returns W(t,d) - the term frequency-inverse document frequency weight of term t in document d
+    def getTFIDFtWeight(self, tIndex, dId, N):
+        tf = self.getTFtd(tIndex, dId)
+        return 0 if tf <= 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex, N)
+
+    # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
+    #  @param self The object pointer.
+    def listTermsInOneDoc(self):
+        terms = self.getTermsFromDictStr()
+        # results = [term for term in sorted(terms) if self.docFreq[terms.index(term)] == 1]
+        results = [term for term in sorted(terms) if len(list(self.postingsMaps[terms.index(term)].keys())) == 1]
+        print('\nTen first Terms in only 1 document: \n{}'.format(results[:10]))
+
+    # Lists the ten terms with highest document frequency.
+    #  @param self The object pointer.
+    def listHighestDocFreqTerms(self):
+        terms = self.getTermsFromDictStr()
+        # doc_freq = sorted(terms, key=lambda term: self.docFreq[terms.index(term)], reverse=True)
+        doc_freq = sorted(terms, key=lambda term: len(list(self.postingsMaps[terms.index(term)].keys())), reverse=True)
+        print('\nTen terms with highest document frequency: \n{}'.format(doc_freq[:10]))
+
+    # Lists the ten terms with highest frequency in one document.
+    #  @param self The object pointer.
+    def listHighestOneDocFreqTerms(self):
+        terms = self.getTermsFromDictStr()
+        doc_freq = sorted(terms, key=lambda term: max(self.postingsMaps[terms.index(term)].values()), reverse=True)
+        print('\nTen terms with highest frequency in one document: \n{}'.format(doc_freq[:10]))
+
+
+def sortListByTerms(allTerms, toBeSorted):
+    return [elem for _, elem in sorted(zip(allTerms, toBeSorted))]

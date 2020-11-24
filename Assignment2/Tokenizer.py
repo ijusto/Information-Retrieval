@@ -1,4 +1,4 @@
-## Tokenizer
+# Tokenizer
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 
@@ -8,7 +8,7 @@ import Stemmer
 
 class Tokenizer:
 
-    ## The constructor.
+    # The constructor.
     #  @param self The object pointer.
     #  @param title Title of the document
     #  @param abstract Abstract of the document
@@ -17,11 +17,11 @@ class Tokenizer:
         self.abstract = abstract
 
 
-## A simple tokenizer that replaces all non-alphabetic characters by a space, lowercases tokens, splits on  whitespace,
+# A simple tokenizer that replaces all non-alphabetic characters by a space, lowercase tokens, splits on  whitespace,
 #  and ignores all tokens with less than 3 characters.
 class SimpleTokenizer(Tokenizer):
 
-    ## The constructor.
+    # The constructor.
     #  @param self The object pointer.
     #  @param title Title of the document
     #  @param abstract Abstract of the document
@@ -29,11 +29,11 @@ class SimpleTokenizer(Tokenizer):
         super().__init__(title, abstract)
         self.terms = []
 
-    ## Populates the terms list with the terms in the document.
+    # Populates the terms list with the terms in the document.
     #  @param self The object pointer.
     #  @returns the list of terms in this document.
-    def getTerms(self):
-        # replaces all non-alphabetic characters by a space, lowercases tokens, splits on whitespace
+    def getTerms(self) -> list:
+        # replaces all non-alphabetic characters by a space, lowercase tokens, splits on whitespace
         self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', self.title + " " + self.abstract)
                               .lower())
         # ignores all tokens with less than 3 characters
@@ -42,11 +42,11 @@ class SimpleTokenizer(Tokenizer):
         return self.terms
 
 
-## An improved tokenizer that incorporates more tokenization decisions than the SimpleTokenizer and integrates the
-#  Porter stemmer (http://snowball.tartarus.org/download.html) and a stopword filter. «
+# An improved tokenizer that incorporates more tokenization decisions than the SimpleTokenizer and integrates the
+#  Porter stemmer (http://snowball.tartarus.org/download.html) and a stop word filter. «
 class BetterTokenizer(Tokenizer):
 
-    ## The constructor.
+    # The constructor.
     #  @param self The object pointer.
     #  @param title Title of the document
     #  @param abstract Abstract of the document
@@ -54,24 +54,24 @@ class BetterTokenizer(Tokenizer):
         super().__init__(title, abstract)
         self.terms = []
 
-    ## Populates the terms list with the terms in the document.
+    # Populates the terms list with the terms in the document.
     #  @param self The object pointer.
     #  @returns the list of terms in this document.
-    def getTerms(self):
+    def getTerms(self) -> list:
         # split by whitespace
         terms = re.split('[\s]', self.title + " " + self.abstract)
 
         for term in terms:
             # maintain websites
             url_match = re.findall(
-                r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
-                r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
+                r'(https?://(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
+                r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?://(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
                 r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', term)
             # maintain emails
-            email_match = re.findall(r'[\w\.-]+@[\w\.-]+', term)
+            email_match = re.findall(r'[\w.-]+@[\w.-]+', term)
             # maintain words with hyphens
             hyphen_match = re.findall(r"([A-Za-z]+-[A-Za-z]+)", term)
-            # maintain aphostrophes
+            # maintain apostrophes
             apostrophe_match = re.findall(r"([A-Za-z]+'[A-Za-z]*)", term)
             # maintain acronyms
             acronyms_match = re.findall(r'\b(?:[a-zA-Z]\.){2,}', term)
@@ -80,7 +80,7 @@ class BetterTokenizer(Tokenizer):
 
             if url_match:
                 if url_match[0].endswith(').') or url_match[0].endswith('),'):
-                    url_match = [url_match[0][:-2]] # ex: https://www.genomedetective.com/app/typingtool/cov).
+                    url_match = [url_match[0][:-2]]  # ex: https://www.genomedetective.com/app/typingtool/cov).
                 elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')'):
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
@@ -105,10 +105,10 @@ class BetterTokenizer(Tokenizer):
 
         self.stopWordFilter()
         self.stem()
-        self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
+        self.terms = list(filter(lambda t: len(t) >= 3, self.terms))
         return self.terms
 
-    ## Removes stopwords from the list of the terms of the document.
+    # Removes stopwords from the list of the terms of the document.
     #  @param self The object pointer.
     def stopWordFilter(self):
         # get the english stopwords
@@ -118,7 +118,7 @@ class BetterTokenizer(Tokenizer):
         document.close()
         self.terms = list(filter(lambda term: term not in stopwords, self.terms))
 
-    ## Stemmes the the list of the terms of the document.
+    # Stemmes the the list of the terms of the document.
     #  @param self The object pointer.
     def stem(self):
         stemmer = Stemmer.Stemmer('english')

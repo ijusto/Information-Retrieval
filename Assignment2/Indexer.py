@@ -14,13 +14,12 @@ class Indexer:
 
     # The constructor.
     #  @param self The object pointer.
-    #  @param collection The path to the csv containing the collection
+    #  @param collectionPath The path to the csv containing the collection
     #  @param tokenizerType The type of tokenizing to do to each document
-    def __init__(self, collection, tokenizerType):
+    def __init__(self, collectionPath, tokenizerType):
         start = timeit.default_timer()
-        self.col = CorpusReader.CorpusReader(collection).readCorpus()  # list((doi, title, abstract))
         self.tokenizerType = tokenizerType
-
+        self.collectionPath = collectionPath
         # store dictionary as a (long) string of characters with the length of each term preceding it
         # front coding
         self.dictStr = ""
@@ -36,7 +35,8 @@ class Indexer:
         self.postingsPtrs = []
         # Blocking parameter in dictionary compression
         self.k = 4
-
+        # total number of documents in the collection
+        self.N = 0
         self.index()
         stop = timeit.default_timer()
 
@@ -60,7 +60,9 @@ class Indexer:
 
         allTerms = []
 
-        for doi, title, abstract in self.col:
+        collection = CorpusReader.CorpusReader(self.collectionPath).readCorpus()  # list((doi, title, abstract))
+        self.N = len(collection)
+        for doi, title, abstract in collection:
             if self.tokenizerType == '0':  # simple
                 tokenizer = Tokenizer.SimpleTokenizer(title, abstract)
             else:  # better
@@ -225,20 +227,18 @@ class Indexer:
     # Returns the inverse document frequency of term t
     #  @param self The object pointer.
     #  @param tIndex The term index.
-    #  @param N # todo: N??
     #  @returns idf(t) - the inverse document frequency of term t
-    def getIDFt(self, tIndex, N):
-        return math.log10(N/self.getDFt(tIndex))
+    def getIDFt(self, tIndex):
+        return math.log10(self.N/self.getDFt(tIndex))
 
     # Returns the tf-idf weight of a term in a document (W(t,d))
     #  @param self The object pointer.
     #  @param tIndex The term index.
     #  @param dId The document id.
-    #  @param N # todo: N??
     #  @returns W(t,d) - the term frequency-inverse document frequency weight of term t in document d
-    def getTFIDFtWeight(self, tIndex, dId, N):
+    def getTFIDFtWeight(self, tIndex, dId):
         tf = self.getTFtd(tIndex, dId)
-        return 0 if tf <= 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex, N)
+        return 0 if tf <= 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex)
 
     # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     #  @param self The object pointer.

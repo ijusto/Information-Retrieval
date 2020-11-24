@@ -7,7 +7,6 @@ import Tokenizer
 import timeit
 import psutil
 import os
-import copy
 
 
 # Indexer
@@ -57,7 +56,7 @@ class Indexer:
     #  @param self The object pointer.
     def index(self):
 
-        allterms = []
+        allTerms = []
 
         for doi, title, abstract in self.col:
             if self.tokenizerType == '0':  # simple
@@ -68,20 +67,20 @@ class Indexer:
             terms = tokenizer.getTerms()
 
             for term in terms:
-                if term in allterms:
-                    if doi in self.postingsMaps[allterms.index(term)].keys():
-                        self.postingsMaps[allterms.index(term)][doi] += 1
+                if term in allTerms:
+                    if doi in self.postingsMaps[allTerms.index(term)].keys():
+                        self.postingsMaps[allTerms.index(term)][doi] += 1
                     else:
-                        self.docFreq[allterms.index(term)] += 1
-                        self.postingsMaps[allterms.index(term)][doi] = 1
+                        self.docFreq[allTerms.index(term)] += 1
+                        self.postingsMaps[allTerms.index(term)][doi] = 1
                 else:
-                    allterms += [term]
-                    self.postingsPtrs += [len(allterms) - 1]
+                    allTerms += [term]
+                    self.postingsPtrs += [len(allTerms) - 1]
                     term_freq_map = {doi: 1}  # key: docId, value: term_freq
                     self.postingsMaps += [term_freq_map]
                     self.docFreq += [1]
 
-        self.dictionaryCompression(allterms)
+        self.dictionaryCompression(allTerms)
 
     # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
     #  @param self The object pointer.
@@ -107,28 +106,27 @@ class Indexer:
     # The search begins with the dictionary.
     # We want to keep it in memory .
     # Even if the dictionary isn't in memory, we want it to be small for a fast search start up time
-    def dictionaryCompression(self, allterms):
+    def dictionaryCompression(self, allTerms):
 
         # terms in alphabetical order
-        self.postingsMaps = [pm for _, pm in sorted(zip(allterms, self.postingsMaps))]
-        self.docFreq = [df for _, df in sorted(zip(allterms, self.docFreq))]
-        self.postingsPtrs = [pp for _, pp in sorted(zip(allterms, self.postingsPtrs))]
-        allterms = sorted(allterms)
-        terms = copy.copy(allterms)
+        self.postingsMaps = [pm for _, pm in sorted(zip(allTerms, self.postingsMaps))]
+        self.docFreq = [df for _, df in sorted(zip(allTerms, self.docFreq))]
+        self.postingsPtrs = [pp for _, pp in sorted(zip(allTerms, self.postingsPtrs))]
+        terms = sorted(allTerms)
         # store dictionary as a (long) string of characters with the length of each term preceding it
         self.dictStr = ""
         # front coding - sorted words commonly have long common prefix-store differences only
         # example: 8automata8automate9automatic10automation  becomes: 8automat*a1|e2|ic3|ion
         encodedTerm = ""
-        # TODO: remove * and | from tokenizer
+        # TODO: check if remove * and | from tokenizer
 
         for i in range(len(terms)):
             # Blocking of k = 4 (store pointers to every 4th term strings)
             if (i % 4) == 0:
-                # Because there is no pointers in python, we store the position of the length of the term in the string as a
-                # pointer to were the term is located in the string
+                # Because there is no pointers in python, we store the position of the length of the term in the string
+                # as a pointer to were the term is located in the string
                 termPtr = len(self.dictStr)
-                self.termPtrs += [termPtr]  # new values in the list are "pointers" to terms / delete terms from the list
+                self.termPtrs += [termPtr]
 
             lenTerm = str(len(terms[i]))
             prefixLen = 0
@@ -159,7 +157,7 @@ class Indexer:
 
     def getTermsFromDictStr(self):
         terms = []
-        
+
         for ptrInd in range(len(self.termPtrs)):
             # Blocking of k = 4 (store pointers to every 4th term strings)
             termPtr = self.termPtrs[ptrInd]
@@ -209,7 +207,7 @@ class Indexer:
                         startBaseWord += 1
 
                     # Discover extra part of the word
-                    term += self.dictStr[newPtr + 2 : newPtr + 2 + extraLength]
+                    term += self.dictStr[newPtr + 2: newPtr + 2 + extraLength]
                     termPtr = newPtr + 2 + extraLength
 
                 terms += [term]

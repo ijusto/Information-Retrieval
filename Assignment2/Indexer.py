@@ -12,6 +12,9 @@ import math
 
 
 # Indexer
+from GammaEncoder import GammaEncoder
+
+
 class Indexer:
 
     # The constructor.
@@ -22,17 +25,22 @@ class Indexer:
         start = timeit.default_timer()
         self.tokenizerType = tokenizerType
         self.collectionPath = collectionPath
+
         # store dictionary as a (long) string of characters with the length of each term preceding it
         # front coding
-        self.dictStr = ""
-        # dictionary of dictionaries {termInd(PostingPointer): {docId: term_tfidfweigth}} - for each term postings with term_tfidfweigth
-        # (length = number of terms)
-        self.postingsMaps = {}
+        self.termDictStr = ""
+        # Blocking parameter in dictionary compression
+        self.k = 4
         # list of pointers/indexes to terms in the dictionary string (after blocking, length < number of terms)
         # with blocking
         self.termPtrs = []
-        # Blocking parameter in dictionary compression
-        self.k = 4
+
+        # dictionary of dictionaries {termInd(PostingPointer): {docId: term_tfidfweigth}} - for each term postings with term_tfidfweigth
+        # (length = number of terms)
+        self.postingsMaps = {}
+        # list of pointers/indexes to postings Lists in the postings string
+        self.postingsPtrs = []
+
         # total number of documents in the collection
         self.N = 0
 
@@ -70,18 +78,16 @@ class Indexer:
                                                      else self.postingsMaps[term][doi] + 1}
                                                      for term in terms})
 
-            #for term in terms:
-            #    if term in self.postingsMaps.keys():
-            #        if doi in self.postingsMaps[term].keys():
-            #            self.postingsMaps[term][doi] += 1
-            #        else:
-            #            self.postingsMaps[term][doi] = 1
-            #    else:
-            #        self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
+        # terms in alphabetical order and docIds ordered
+        self.postingsMaps = dict(sorted({term: dict(sorted({doi: term_freq
+                                                            for doi, term_freq in self.postingsMaps[term].items()}
+                                                           .items())) for term in self.postingsMaps.keys()}.items()))
+
+        # encode the postings and store the pointers
+        self.postingsPtrs = GammaEncoder([self.postingsMaps[term].keys() for term in self.postingsMaps.keys()]).encodeAndWritePostings('encodedPostings')
 
         # we store the terms in a string, the term pointers/indexes of that string in a list, and modify the keys of the
         # postingsMaps to the index of each term if they were on a list alphabetically
-        # TODO: Gamma encoding
         self.dictionaryCompression()
 
         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
@@ -103,38 +109,40 @@ class Indexer:
     # We want to keep it in memory .
     # Even if the dictionary isn't in memory, we want it to be small for a fast search start up time
     def dictionaryCompression(self):
-        # terms in alphabetical order
-        self.postingsMaps = dict(sorted(self.postingsMaps.items()))
         terms = list(self.postingsMaps.keys())
         # store dictionary as a (long) string of characters with the length of each term preceding it
-        self.dictStr = ""
+        self.termDictStr = ""
         # front coding - sorted words commonly have long common prefix-store differences only
         # example: 8automata8automate9automatic10automation  becomes: 8automat*a1|e2|ic3|ion
         encodedTerm = ""
         # TODO: check if remove * and | from tokenizer
+
+        indexInBlock = 0
 
         for i in range(len(terms)):
             # modify the keys of the postingsMaps to the index of each term if they were on a list alphabetically
             # (postings "pointers"), {termInd(PostingPointer): {docId: term_freq}}
             self.postingsMaps[i] = self.postingsMaps.pop(terms[i])
 
-            # Blocking of k = 4 (store pointers to every 4th term strings)
-            if (i % 4) == 0:
-                # Because there is no pointers in python, we store the position of the length of the term in the string
-                # as a pointer to were the term is located in the string
-                termPtr = len(self.dictStr)
-                self.termPtrs += [termPtr]
-
             lenTerm = str(len(terms[i]))
             prefixLen = 0
+
+            # Front coding in each block of k = 4 (and store pointers to every 4th term strings)
+            if indexInBlock == 0:
+                indexInBlock = self.k
+                # Because there is no pointers in python, we store the position of the length of the term in the string
+                # as a pointer to were the term is located in the string
+                self.termPtrs += [len(self.termDictStr)]
+                encodedTerm = ""
+
             # last term had a prefix common with another term, and the current one starts with that same prefix
             if encodedTerm != "" and terms[i].startswith(encodedTerm):
                 # extraLength | remainPartOfTheTerm, e.g.: 1|e
-                self.dictStr += str(len(terms[i][len(encodedTerm):])) + "|" + terms[i][len(encodedTerm):]
+                self.termDictStr += str(len(terms[i][len(encodedTerm):])) + "|" + terms[i][len(encodedTerm):]
             # last term and the current one have no common prefix
             elif i <= len(terms) - 2:
                 # e.g.: 8
-                self.dictStr += lenTerm
+                self.termDictStr += lenTerm
                 # evaluate if there is a common prefix with the next term
                 while True:
                     if prefixLen == len(terms[i]) or terms[i][prefixLen] != terms[i + 1][prefixLen]:
@@ -143,13 +151,13 @@ class Indexer:
                 # only encode terms with common prefixes with more than 3 characters
                 if prefixLen > 3:
                     encodedTerm = terms[i][:prefixLen]
-                    self.dictStr += encodedTerm + '*' + terms[i][prefixLen:]
+                    self.termDictStr += encodedTerm + '*' + terms[i][prefixLen:]
                 else:
-                    self.dictStr += terms[i]
+                    self.termDictStr += terms[i]
                     encodedTerm = ""
             # last term with no shared prefix
             else:
-                self.dictStr += lenTerm + terms[i]
+                self.termDictStr += lenTerm + terms[i]
                 encodedTerm = ""
 
     def getTermsFromDictStr(self) -> list:
@@ -159,60 +167,57 @@ class Indexer:
             # Blocking of k = 4 (store pointers to every 4th term strings)
             termPtr = self.termPtrs[ptrInd]
             for i in range(4):
-                if termPtr >= len(self.dictStr):
+                if termPtr >= len(self.termDictStr):
                     break
                 lenInPtrStr = ""
                 nDigitLen = 0
                 while True:
-                    lenInPtrStr += self.dictStr[termPtr + nDigitLen]
+                    lenInPtrStr += self.termDictStr[termPtr + nDigitLen]
                     nDigitLen += 1
-                    if not self.dictStr[termPtr + nDigitLen].isdigit():
+                    if not self.termDictStr[termPtr + nDigitLen].isdigit():
                         nDigitLen -= 1
                         break
                 lenInPtr = int(lenInPtrStr)
 
                 newPtr = termPtr + nDigitLen
-                extraLength = lenInPtr if self.dictStr[newPtr + 1] == '|' else 0
+                extraLength = lenInPtr if self.termDictStr[newPtr + 1] == '|' else 0
 
                 if extraLength == 0:
-                    term = self.dictStr[newPtr + 1:newPtr + 1 + lenInPtr]
+                    term = self.termDictStr[newPtr + 1:newPtr + 1 + lenInPtr]
 
                     termPtr = newPtr + 1 + lenInPtr
                     if '*' in term:
                         term = term.replace('*', '')
                         # Discover extra part of the word
-                        term += self.dictStr[newPtr + 1 + lenInPtr]
+                        term += self.termDictStr[newPtr + 1 + lenInPtr]
                         termPtr += 1
-                    elif newPtr + 1 + lenInPtr < len(self.dictStr) - 1 and '*' in self.dictStr[newPtr + 1 + lenInPtr]:
+                    elif newPtr + 1 + lenInPtr < len(self.termDictStr) - 1 and '*' in self.termDictStr[newPtr + 1 + lenInPtr]:
                         termPtr += 1
                 else:
                     # Discover base word
                     endBaseWord = 1
                     while True:
-                        char = self.dictStr[newPtr - endBaseWord]
+                        char = self.termDictStr[newPtr - endBaseWord]
                         if char == '*':
                             break
                         endBaseWord += 1
 
                     startBaseWord = endBaseWord
                     while True:
-                        char = self.dictStr[newPtr - startBaseWord]
+                        char = self.termDictStr[newPtr - startBaseWord]
                         if char.isdigit():
                             startBaseWord -= 1
-                            term = self.dictStr[newPtr - startBaseWord: newPtr - endBaseWord]
+                            term = self.termDictStr[newPtr - startBaseWord: newPtr - endBaseWord]
                             break
                         startBaseWord += 1
 
                     # Discover extra part of the word
-                    term += self.dictStr[newPtr + 2: newPtr + 2 + extraLength]
+                    term += self.termDictStr[newPtr + 2: newPtr + 2 + extraLength]
                     termPtr = newPtr + 2 + extraLength
 
                 terms += [term]
 
         return terms
-
-    def postingsGammaEncoded(self):
-        pass
 
     # Returns the number of times that the term t occurs in the document d, i.e., the term frequency TF(t,d) of term t
     # in document d

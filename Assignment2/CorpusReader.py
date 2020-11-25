@@ -21,11 +21,9 @@ class CorpusReader:
             rows = list(csv_reader)
             # doi, title, abstract
             for iRow in range(len(rows)):
-                doi = rows[iRow][3].replace("doi.org/", "").replace("http://dx.doi.org/", "")
                 title = rows[iRow][2]
                 abstract = rows[iRow][7]
-                if doi.startswith("10.") and abstract is not None and abstract != '' and title is not None\
-                        and title != '':
-                    corpus += [(doi, title, abstract)]
+                if abstract is not None and abstract != '' and title is not None and title != '':
+                    corpus += [(iRow, title, abstract)]
 
         return corpus

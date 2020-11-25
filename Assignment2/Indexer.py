@@ -24,17 +24,12 @@ class Indexer:
         # store dictionary as a (long) string of characters with the length of each term preceding it
         # front coding
         self.dictStr = ""
-        # list of dictionaries {docId: term_tfidfweigth} for each term (postings with term_tfidfweigth),
+        # dictionary of dictionaries {termInd(PostingPointer): {docId: term_tfidfweigth}} - for each term postings with term_tfidfweigth
         # (length = number of terms)
-        self.postingsMaps = []
-        # list of document frequencies, (length = number of terms)
-        # self.docFreq = []
+        self.postingsMaps = {}
         # list of pointers/indexes to terms in the dictionary string (after blocking, length < number of terms)
         # with blocking
         self.termPtrs = []
-        # list of pointers/indexes in postingsMaps
-        # TODO: Gamma encoding
-        self.postingsPtrs = []
         # Blocking parameter in dictionary compression
         self.k = 4
         # total number of documents in the collection
@@ -53,19 +48,16 @@ class Indexer:
 
         #   b) What is your vocabulary size?
         print('\nVocabulary Size: {}'.format(len(self.postingsMaps)))
-        # print('\nVocabulary Size: {}'.format(len(self.docFreq)))
 
     #  todo: description
     #  @param self The object pointer.
     def index(self):
 
-        allTerms = []
-
         collection = CorpusReader.CorpusReader(self.collectionPath).readCorpus()  # list((doi, title, abstract))
         self.N = len(collection)
 
-        # first, we populate the dictionaries {docId: termFreq} in the postingsMaps list
-        for doi, title, abstract in collection:
+        # first, we populate the dictionary postingsMaps with the term frequency {term_string: {docId: term_freq} }
+        for doi, title, abstract in CorpusReader.CorpusReader(self.collectionPath).readCorpus():
             if self.tokenizerType == '0':  # simple
                 tokenizer = Tokenizer.SimpleTokenizer(title, abstract)
             else:  # better
@@ -73,44 +65,46 @@ class Indexer:
 
             terms = tokenizer.getTerms()
 
-            for term in terms:
-                if term in allTerms:
-                    if doi in self.postingsMaps[allTerms.index(term)].keys():
-                        self.postingsMaps[allTerms.index(term)][doi] += 1
-                    else:
-                        # self.docFreq[allTerms.index(term)] += 1
-                        self.postingsMaps[allTerms.index(term)][doi] = 1
-                else:
-                    allTerms += [term]
-                    self.postingsPtrs += [len(allTerms) - 1]
-                    term_freq_map = {doi: 1}  # key: docId, value: term_freq
-                    self.postingsMaps += [term_freq_map]
-                    # self.docFreq += [1]
+            self.postingsMaps.update({term: {doi: 1 if term not in self.postingsMaps.keys() or doi not in self.postingsMaps[term].keys()
+                                                     else self.postingsMaps[term][doi] + 1}
+                                                     for term in terms})
 
-        self.dictionaryCompression(allTerms)
+            #for term in terms:
+            #    if term in self.postingsMaps.keys():
+            #        if doi in self.postingsMaps[term].keys():
+            #            self.postingsMaps[term][doi] += 1
+            #        else:
+            #            self.postingsMaps[term][doi] = 1
+            #    else:
+            #        self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
 
-        # then, we modify the dictionaries {docId: termFreq} in the postingsMaps list to
-        # {docId: weight (with length normalization)}
+        # we store the terms in a string, the term pointers/indexes of that string in a list, and modify the keys of the
+        # postingsMaps to the index of each term if they were on a list alphabetically
+        # TODO: Gamma encoding
+        self.dictionaryCompression()
+
         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
+        # then, we modify the postingsMaps from {termInd(PostingPointer): {docId: term_freq}} to
+        # {termInd(PostingPointer): {docId: weight}}
         # logarithmic term frequency
-        self.postingsMaps = [0 if self.getTFtd(termInd, docId) <= 0
-                                else (1 + math.log10(self.getTFtd(termInd, docId)))
-                                for termInd in range(len(self.postingsMaps))
-                                for docId in self.postingsMaps[termInd].keys()]
+        temp = {termInd: {docId: 0 if self.getTFtd(termInd, docId) <= 0
+                                                else (1 + math.log10(self.getTFtd(termInd, docId)))
+                                                for docId in self.postingsMaps[termInd].keys()}
+                                        for termInd in range(len(self.postingsMaps))}
+        self.postingsMaps.update(temp)
+        # then to {termInd(PostingPointer): {docId: weight (length normalized)}}
         # cosine normalization
-        self.postingsMaps = [self.postingsMaps[termInd][docId] / self.getDocL2Norm(docId)
-                                for termInd in range(len(self.postingsMaps))
-                                for docId in self.postingsMaps[termInd].keys()]
+        self.postingsMaps = {termInd: {docId: self.postingsMaps[termInd][docId] / self.getDocL2Norm(docId)
+                                                for docId in self.postingsMaps[termInd].keys()}
+                                        for termInd in range(len(self.postingsMaps))}
 
     # The search begins with the dictionary.
     # We want to keep it in memory .
     # Even if the dictionary isn't in memory, we want it to be small for a fast search start up time
-    def dictionaryCompression(self, allTerms):
+    def dictionaryCompression(self):
         # terms in alphabetical order
-        self.postingsMaps = sortListByTerms(allTerms, self.postingsMaps)
-        # self.docFreq = sortListByTerms(allTerms, self.docFreq)
-        self.postingsPtrs = sortListByTerms(allTerms, self.postingsPtrs)
-        terms = sorted(allTerms)
+        self.postingsMaps = dict(sorted(self.postingsMaps.items()))
+        terms = list(self.postingsMaps.keys())
         # store dictionary as a (long) string of characters with the length of each term preceding it
         self.dictStr = ""
         # front coding - sorted words commonly have long common prefix-store differences only
@@ -119,6 +113,10 @@ class Indexer:
         # TODO: check if remove * and | from tokenizer
 
         for i in range(len(terms)):
+            # modify the keys of the postingsMaps to the index of each term if they were on a list alphabetically
+            # (postings "pointers"), {termInd(PostingPointer): {docId: term_freq}}
+            self.postingsMaps[i] = self.postingsMaps.pop(terms[i])
+
             # Blocking of k = 4 (store pointers to every 4th term strings)
             if (i % 4) == 0:
                 # Because there is no pointers in python, we store the position of the length of the term in the string
@@ -221,7 +219,7 @@ class Indexer:
     #  @param tIndex The term index.
     #  @param dId The document id.
     #  @returns the term frequency TF(t,d) of term t in document d
-    def getTFtd(self, tIndex, dId):
+    def getTFtd(self, tIndex, dId) -> int:
         return 0 if tIndex < 0 else self.postingsMaps[tIndex][dId]
 
     # Returns the number of occurrences of the term t occurs in the collection, counting multiple occurrences
@@ -250,44 +248,18 @@ class Indexer:
     #  @param tIndex The term index.
     #  @param dId The document id.
     #  @returns W(t,d) - the term frequency-inverse document frequency weight of term t in document d
-    # todo: before calling this function for queries, verify if the term is in the collenction (dictionary)
+    # todo: before calling this function for queries, verify if the term is in the collection (dictionary)
     #   if not, pass the tIndex = -1
     def getTFIDFtWeight(self, tIndex, dId):
         tf = self.getTFtd(tIndex, dId)
         return 0 if tf == 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex)
 
     def getDocL2Norm(self, docId):
-        return math.sqrt(sum([math.pow(postings[docId], 2) for postings in self.postingsMaps
+        return math.sqrt(sum([math.pow(postings[docId], 2) for postings in self.postingsMaps.values()
                               if docId in postings.keys()]))
 
     def getCosine2Docs(self, docId1, docId2):
-        weightsDoc1 = [postings[docId1] for postings in self.postingsMaps if docId1 in postings.keys()]
-        weightsDoc2 = [postings[docId2] for postings in self.postingsMaps if docId2 in postings.keys()]
+        weightsDoc1 = [postings[docId1] for postings in self.postingsMaps.values() if docId1 in postings.keys()]
+        weightsDoc2 = [postings[docId2] for postings in self.postingsMaps.values() if docId2 in postings.keys()]
         return sum([w1 * w2 for w1, w2 in zip(weightsDoc1, weightsDoc2)])
 
-    # Lists the ten first terms (in alphabetic order) that appear in only one document (document frequency = 1).
-    #  @param self The object pointer.
-    def listTermsInOneDoc(self):
-        terms = self.getTermsFromDictStr()
-        # results = [term for term in sorted(terms) if self.docFreq[terms.index(term)] == 1]
-        results = [term for term in sorted(terms) if len(list(self.postingsMaps[terms.index(term)].keys())) == 1]
-        print('\nTen first Terms in only 1 document: \n{}'.format(results[:10]))
-
-    # Lists the ten terms with highest document frequency.
-    #  @param self The object pointer.
-    def listHighestDocFreqTerms(self):
-        terms = self.getTermsFromDictStr()
-        # doc_freq = sorted(terms, key=lambda term: self.docFreq[terms.index(term)], reverse=True)
-        doc_freq = sorted(terms, key=lambda term: len(list(self.postingsMaps[terms.index(term)].keys())), reverse=True)
-        print('\nTen terms with highest document frequency: \n{}'.format(doc_freq[:10]))
-
-    # Lists the ten terms with highest frequency in one document.
-    #  @param self The object pointer.
-    def listHighestOneDocFreqTerms(self):
-        terms = self.getTermsFromDictStr()
-        doc_freq = sorted(terms, key=lambda term: max(self.postingsMaps[terms.index(term)].values()), reverse=True)
-        print('\nTen terms with highest frequency in one document: \n{}'.format(doc_freq[:10]))
-
-
-def sortListByTerms(allTerms, toBeSorted):
-    return [elem for _, elem in sorted(zip(allTerms, toBeSorted))]

@@ -11,11 +11,9 @@ class Tokenizer:
 
     # The constructor.
     #  @param self The object pointer.
-    #  @param title Title of the document
-    #  @param abstract Abstract of the document
-    def __init__(self, title, abstract):
-        self.title = title
-        self.abstract = abstract
+    #  @param text Text in the document
+    def __init__(self, text):
+        self.text = text
 
 
 # A simple tokenizer that replaces all non-alphabetic characters by a space, lowercase tokens, splits on  whitespace,
@@ -24,10 +22,9 @@ class SimpleTokenizer(Tokenizer):
 
     # The constructor.
     #  @param self The object pointer.
-    #  @param title Title of the document
-    #  @param abstract Abstract of the document
-    def __init__(self, title, abstract):
-        super().__init__(title, abstract)
+    #  @param text Text in the document
+    def __init__(self, text):
+        super().__init__(text)
         self.terms = []
 
     # Populates the terms list with the terms in the document.
@@ -35,7 +32,7 @@ class SimpleTokenizer(Tokenizer):
     #  @returns the list of terms in this document.
     def getTerms(self) -> list:
         # replaces all non-alphabetic characters by a space, lowercase tokens, splits on whitespace
-        self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', self.title + " " + self.abstract)
+        self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', self.text)
                               .lower())
         # ignores all tokens with less than 3 characters
         self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
@@ -49,10 +46,9 @@ class BetterTokenizer(Tokenizer):
 
     # The constructor.
     #  @param self The object pointer.
-    #  @param title Title of the document
-    #  @param abstract Abstract of the document
-    def __init__(self, title, abstract):
-        super().__init__(title, abstract)
+    #  @param text Text in the document
+    def __init__(self, text):
+        super().__init__(text)
         self.terms = []
 
     # Populates the terms list with the terms in the document.
@@ -60,7 +56,7 @@ class BetterTokenizer(Tokenizer):
     #  @returns the list of terms in this document.
     def getTerms(self) -> list:
         # split by whitespace
-        terms = re.split('[\s]', self.title + " " + self.abstract)
+        terms = re.split('[\s]', self.text)
 
         for term in terms:
             # maintain websites

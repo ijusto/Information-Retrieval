@@ -1,4 +1,5 @@
 # Tokenizer
+#  Forms index words (terms).
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 

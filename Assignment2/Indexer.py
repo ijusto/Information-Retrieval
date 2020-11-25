@@ -1,4 +1,5 @@
 # Indexer.
+#  Constructs an inverted index of word (term) to document pointers.
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 

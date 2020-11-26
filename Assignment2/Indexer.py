@@ -275,3 +275,11 @@ class Indexer:
         weightsDoc2 = [postings[docId2] for postings in self.postingsMaps.values() if docId2 in postings.keys()]
         return sum([w1 * w2 for w1, w2 in zip(weightsDoc1, weightsDoc2)])
 
+    # 1.3. Add a method to write the resulting index to file. Use the following format, or a similar one (one term per
+    #       line): term:idf;doc_id:term_weight;doc_id:term_weight;...
+    def writeIndexToFile(self, filename):
+        os.remove(filename)
+        indexFile = open(filename, 'wb')
+
+
+        indexFile.close()

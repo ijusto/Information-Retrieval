@@ -3,6 +3,8 @@
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 
+import os
+
 # Gamma Encoder
 class GammaEncoder:
 
@@ -12,6 +14,7 @@ class GammaEncoder:
         self.postingsList = postingsList
 
     def encodeAndWritePostings(self, filename):
+        os.remove(filename)
         postingsFile = open(filename, 'wb')
 
         postingsPtrs = []

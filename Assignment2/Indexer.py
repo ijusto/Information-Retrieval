@@ -13,6 +13,7 @@ import math
 
 # Indexer
 from GammaEncoder import GammaEncoder
+from Searcher import Searcher
 
 
 class Indexer:
@@ -57,6 +58,8 @@ class Indexer:
 
         #   b) What is your vocabulary size?
         print('\nVocabulary Size: {}'.format(len(self.postingsMaps)))
+
+        self.searcher = Searcher(self.termDictStr, self.termPtrs, self.postingsPtrs)
 
     #  todo: description
     #  @param self The object pointer.
@@ -104,6 +107,9 @@ class Indexer:
         self.postingsMaps = {termInd: {docId: self.postingsMaps[termInd][docId] / self.getDocL2Norm(docId)
                                                 for docId in self.postingsMaps[termInd].keys()}
                                         for termInd in range(len(self.postingsMaps))}
+
+    def search(self, term):
+        self.searcher.searchForTermInDictionary(term)
 
     # The search begins with the dictionary.
     # We want to keep it in memory .

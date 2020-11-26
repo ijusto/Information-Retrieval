@@ -36,11 +36,11 @@ class Indexer:
         # with blocking
         self.termPtrs = []
 
-        # dictionary of dictionaries {termInd(PostingPointer): {docId: term_tfidfweigth}} - for each term postings with term_tfidfweigth
+        # dictionary of dictionaries {termInd: {docId: term_tfidfweigth}} - for each term postings with term_tfidfweigth
         # (length = number of terms)
         self.postingsMaps = {}
         # list of pointers/indexes to postings Lists in the postings string
-        self.postingsPtrs = []
+        #self.postingsPtrs = []
 
         # total number of documents in the collection
         self.N = 0
@@ -59,7 +59,7 @@ class Indexer:
         #   b) What is your vocabulary size?
         print('\nVocabulary Size: {}'.format(len(self.postingsMaps)))
 
-        self.searcher = Searcher(self.termDictStr, self.termPtrs, self.postingsPtrs)
+        #self.searcher = Searcher(self.termDictStr, self.termPtrs, self.postingsPtrs)
 
     #  todo: description
     #  @param self The object pointer.
@@ -82,34 +82,43 @@ class Indexer:
                                                      for term in terms})
 
         # terms in alphabetical order and docIds ordered
-        self.postingsMaps = dict(sorted({term: dict(sorted({doi: term_freq
-                                                            for doi, term_freq in self.postingsMaps[term].items()}
-                                                           .items())) for term in self.postingsMaps.keys()}.items()))
+        #self.postingsMaps = dict(sorted({term: dict(sorted({doi: term_freq
+        #                                                    for doi, term_freq in self.postingsMaps[term].items()}
+        #                                                   .items()))
+        #                                 for term in self.postingsMaps.keys()}.items()))
 
         # encode the postings and store the pointers
-        self.postingsPtrs = GammaEncoder([self.postingsMaps[term].keys() for term in self.postingsMaps.keys()]).encodeAndWritePostings('encodedPostings')
+        #self.postingsPtrs = GammaEncoder([self.postingsMaps[term].keys() for term in self.postingsMaps.keys()]).encodeAndWritePostings('encodedPostings')
 
         # we store the terms in a string, the term pointers/indexes of that string in a list, and modify the keys of the
         # postingsMaps to the index of each term if they were on a list alphabetically
-        self.dictionaryCompression()
+        #self.dictionaryCompression()
 
         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
-        # then, we modify the postingsMaps from {termInd(PostingPointer): {docId: term_freq}} to
-        # {termInd(PostingPointer): {docId: weight}}
+        # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: {docId: weight}}
         # logarithmic term frequency
-        temp = {termInd: {docId: 0 if self.getTFtd(termInd, docId) <= 0
-                                                else (1 + math.log10(self.getTFtd(termInd, docId)))
-                                                for docId in self.postingsMaps[termInd].keys()}
-                                        for termInd in range(len(self.postingsMaps))}
-        self.postingsMaps.update(temp)
-        # then to {termInd(PostingPointer): {docId: weight (length normalized)}}
+        self.postingsMaps = {term: {docId: self.getTFIDFtWeight(term, docId)
+                                    for docId in self.postingsMaps[term].keys()}
+                             for term in self.postingsMaps.keys()}
+
+        # then to {term: (term_idf, {docId: weight (length normalized)}})
         # cosine normalization
-        self.postingsMaps = {termInd: {docId: self.postingsMaps[termInd][docId] / self.getDocL2Norm(docId)
-                                                for docId in self.postingsMaps[termInd].keys()}
-                                        for termInd in range(len(self.postingsMaps))}
+        self.postingsMaps = {term: (self.getIDFt(term),
+                                    {docId: self.postingsMaps[term][docId] / self.getDocL2Norm(docId)
+                                     for docId in self.postingsMaps[term].keys()})
+                             for term in self.postingsMaps.keys()}
+
+        # order by term_idf and then by term_weight (both reversed)
+        # Postings of low-idf terms have many docs
+
+        self.postingsMaps = dict(sorted({t: (idf, dict(sorted({doid: w for doid, w in map.items()}.items(),
+                                                              key=lambda items: items[1], reverse=True)))
+                                         for t, (idf, map) in self.postingsMaps.items()}.items(),
+                                        key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
 
     def search(self, term):
         self.searcher.searchForTermInDictionary(term)
+
 
     # The search begins with the dictionary.
     # We want to keep it in memory .
@@ -121,7 +130,6 @@ class Indexer:
         # front coding - sorted words commonly have long common prefix-store differences only
         # example: 8automata8automate9automatic10automation  becomes: 8automat*a1|e2|ic3|ion
         encodedTerm = ""
-        # TODO: check if remove * and | from tokenizer
 
         indexInBlock = 0
 
@@ -228,43 +236,41 @@ class Indexer:
     # Returns the number of times that the term t occurs in the document d, i.e., the term frequency TF(t,d) of term t
     # in document d
     #  @param self The object pointer.
-    #  @param tIndex The term index.
+    #  @param t The term.
     #  @param dId The document id.
     #  @returns the term frequency TF(t,d) of term t in document d
-    def getTFtd(self, tIndex, dId) -> int:
-        return 0 if tIndex < 0 else self.postingsMaps[tIndex][dId]
+    def getTFtd(self, t, dId) -> int:
+        return 0 if t not in self.postingsMaps.keys() else self.postingsMaps[t][dId]
 
     # Returns the number of occurrences of the term t occurs in the collection, counting multiple occurrences
     #  @param self The object pointer.
-    #  @param tIndex The term index.
+    #  @param t The term.
     #  @returns the collection frequency of term t
-    def getCollectionFreq(self, tIndex):
-        return sum([self.postingsMaps[tIndex][docId] for docId in self.postingsMaps[tIndex].keys()])
+    def getCollectionFreq(self, t):
+        return sum([self.postingsMaps[t][docId] for docId in self.postingsMaps[t].keys()])
 
     # Returns the number of documents that contain the term t
     #  @param self The object pointer.
-    #  @param tIndex The term index.
+    #  @param t The term.
     #  @returns df(t) - the document frequency of term t
-    def getDFt(self, tIndex):
-        return 1 if tIndex < 0 else len(list(self.postingsMaps[tIndex].keys()))
+    def getDFt(self, t):
+        return 1 if t not in self.postingsMaps.keys() else len(list(self.postingsMaps[t].keys()))
 
     # Returns the inverse document frequency of term t
     #  @param self The object pointer.
-    #  @param tIndex The term index.
+    #  @param t The term index.
     #  @returns idf(t) - the inverse document frequency of term t
-    def getIDFt(self, tIndex):
-        return math.log10(self.N / self.getDFt(tIndex))
+    def getIDFt(self, t):
+        return math.log10(self.N / self.getDFt(t))
 
     # Returns the tf-idf weight of a term in a document (W(t,d))
     #  @param self The object pointer.
-    #  @param tIndex The term index.
+    #  @param t The term.
     #  @param dId The document id.
     #  @returns W(t,d) - the term frequency-inverse document frequency weight of term t in document d
-    # todo: before calling this function for queries, verify if the term is in the collection (dictionary)
-    #   if not, pass the tIndex = -1
-    def getTFIDFtWeight(self, tIndex, dId):
-        tf = self.getTFtd(tIndex, dId)
-        return 0 if tf == 0 else (1 + math.log10(tf)) * self.getIDFt(tIndex)
+    def getTFIDFtWeight(self, t, dId):
+        tf = self.getTFtd(t, dId)
+        return 0 if tf == 0 else (1 + math.log10(tf)) * self.getIDFt(t)
 
     def getDocL2Norm(self, docId):
         return math.sqrt(sum([math.pow(postings[docId], 2) for postings in self.postingsMaps.values()
@@ -280,6 +286,7 @@ class Indexer:
     def writeIndexToFile(self, filename):
         os.remove(filename)
         indexFile = open(filename, 'wb')
+
 
 
         indexFile.close()

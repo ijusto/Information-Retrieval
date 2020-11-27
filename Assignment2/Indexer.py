@@ -68,7 +68,7 @@ class Indexer:
         collection = CorpusReader.CorpusReader(self.collectionPath).readCorpus()  # list((doi, title, abstract))
         self.N = len(collection)
 
-        # first, we populate the dictionary postingsMaps with the term frequency {term_string: {docId: term_freq} }
+        # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: term_freq} }
         for doi, title, abstract in CorpusReader.CorpusReader(self.collectionPath).readCorpus():
             if self.tokenizerType == '0':  # simple
                 tokenizer = Tokenizer.SimpleTokenizer(title + " " + abstract)
@@ -76,7 +76,6 @@ class Indexer:
                 tokenizer = Tokenizer.BetterTokenizer(title + " " + abstract)
 
             terms = tokenizer.getTerms()
-
             self.postingsMaps.update({term: {doi: 1 if term not in self.postingsMaps.keys() or doi not in self.postingsMaps[term].keys()
                                                      else self.postingsMaps[term][doi] + 1}
                                                      for term in terms})
@@ -110,14 +109,14 @@ class Indexer:
 
         # order by term_idf and then by term_weight (both reversed)
         # Postings of low-idf terms have many docs
-
         self.postingsMaps = dict(sorted({t: (idf, dict(sorted({doid: w for doid, w in map.items()}.items(),
                                                               key=lambda items: items[1], reverse=True)))
                                          for t, (idf, map) in self.postingsMaps.items()}.items(),
                                         key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
 
     def search(self, term):
-        self.searcher.searchForTermInDictionary(term)
+        #self.searcher.searchForTermInDictionary(term)
+        pass
 
 
     # The search begins with the dictionary.
@@ -254,7 +253,7 @@ class Indexer:
     #  @param t The term.
     #  @returns df(t) - the document frequency of term t
     def getDFt(self, t):
-        return 1 if t not in self.postingsMaps.keys() else len(list(self.postingsMaps[t].keys()))
+        return 1 if t not in self.postingsMaps.keys() else len(self.postingsMaps[t])
 
     # Returns the inverse document frequency of term t
     #  @param self The object pointer.
@@ -284,9 +283,13 @@ class Indexer:
     # 1.3. Add a method to write the resulting index to file. Use the following format, or a similar one (one term per
     #       line): term:idf;doc_id:term_weight;doc_id:term_weight;...
     def writeIndexToFile(self, filename):
-        os.remove(filename)
-        indexFile = open(filename, 'wb')
+        if os.path.isfile(filename):
+            os.remove(filename)
 
+        indexFile = open(filename, 'w')
 
+        indexFile.writelines([term+':'+str(idf)+';'+''.join([str(doc_id)+':'+str(term_weight)+';'
+                                                             for doc_id, term_weight in map.items()])+'\n'
+                              for term, (idf, map) in self.postingsMaps.items()])
 
         indexFile.close()

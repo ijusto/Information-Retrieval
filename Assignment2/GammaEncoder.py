@@ -14,7 +14,8 @@ class GammaEncoder:
         self.postingsList = postingsList
 
     def encodeAndWritePostings(self, filename):
-        os.remove(filename)
+        if os.path.isfile(filename):
+            os.remove(filename)
         postingsFile = open(filename, 'wb')
 
         postingsPtrs = []

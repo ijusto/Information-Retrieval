@@ -41,6 +41,7 @@ def main(argv):
             tokenizerType = arg
 
     indexer = Indexer(collectionFile, tokenizerType)
+    indexer.writeIndexToFile('index')
 
 
 if __name__ == "__main__":

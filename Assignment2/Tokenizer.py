@@ -30,7 +30,7 @@ class SimpleTokenizer(Tokenizer):
     # Populates the terms list with the terms in the document.
     #  @param self The object pointer.
     #  @returns the list of terms in this document.
-    def getTerms(self) -> list:
+    def getTerms(self):
         # replaces all non-alphabetic characters by a space, lowercase tokens, splits on whitespace
         self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', self.text)
                               .lower())
@@ -54,7 +54,7 @@ class BetterTokenizer(Tokenizer):
     # Populates the terms list with the terms in the document.
     #  @param self The object pointer.
     #  @returns the list of terms in this document.
-    def getTerms(self) -> list:
+    def getTerms(self):
         # split by whitespace
         terms = re.split('[\s]', self.text)
 

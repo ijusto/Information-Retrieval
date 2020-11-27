@@ -76,9 +76,19 @@ class Indexer:
                 tokenizer = Tokenizer.BetterTokenizer(title + " " + abstract)
 
             terms = tokenizer.getTerms()
-            self.postingsMaps.update({term: {doi: 1 if term not in self.postingsMaps.keys() or doi not in self.postingsMaps[term].keys()
-                                                     else self.postingsMaps[term][doi] + 1}
-                                                     for term in terms})
+            #self.postingsMaps.update({term: {doi: 1 if term not in self.postingsMaps.keys()
+            #                                           or doi not in self.postingsMaps[term].keys()
+            #                                         else self.postingsMaps[term][doi] + 1}
+            #                                         for term in terms})
+
+            for term in terms:
+                if term in self.postingsMaps.keys():
+                    if doi in self.postingsMaps[term].keys():
+                        self.postingsMaps[term][doi] += 1
+                    else:
+                        self.postingsMaps[term][doi] = 1
+                else:
+                    self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
 
         # terms in alphabetical order and docIds ordered
         #self.postingsMaps = dict(sorted({term: dict(sorted({doi: term_freq
@@ -113,6 +123,9 @@ class Indexer:
                                                               key=lambda items: items[1], reverse=True)))
                                          for t, (idf, map) in self.postingsMaps.items()}.items(),
                                         key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
+
+        j=0
+        print(j)
 
     def search(self, term):
         #self.searcher.searchForTermInDictionary(term)

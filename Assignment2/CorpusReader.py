@@ -16,14 +16,16 @@ class CorpusReader:
 
     def readCorpus(self) -> list:
         corpus = []
+
         with open(self.csvFName) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             rows = list(csv_reader)
             # doi, title, abstract
             for iRow in range(len(rows)):
-                title = rows[iRow][2]
-                abstract = rows[iRow][7]
-                if abstract is not None and abstract != '' and title is not None and title != '':
-                    corpus += [(iRow, title, abstract)]
+                title = rows[iRow][3]
+                abstract = rows[iRow][8]
+                doi = rows[iRow][4]
+                if abstract is not None and abstract != '' and title is not None and title != '' and doi is not None and doi != '':
+                    corpus += [(doi, title, abstract)]
 
         return corpus

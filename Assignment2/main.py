@@ -77,7 +77,7 @@ def main(argv):
                         # Query Operations
                         QueryOperations.getQueriesTerms(tokenizerType, query),
                     'index'))
-        
+
         end.append(timer())
 
         # FAZER PRINT 1.3
@@ -88,9 +88,7 @@ def main(argv):
 
         # If rankType = 1 (BM25)
         else:
-            # lenD is the length of the document D in words
-            # avgdl is the average document length in the text collection from which documents are drawn
-            _ = ranker.bm25(lenD, avgdl, 1.2, 0.75)
+            _ = ranker.bm25(1.2, 0.75)
 
 
 if __name__ == "__main__":

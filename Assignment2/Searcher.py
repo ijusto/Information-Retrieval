@@ -4,24 +4,27 @@
 #  @author Daniel Marques, 85070
 
 def searchDocuments(queriesTerms, indexFile):
-    documentsInfo = {} # {docId: {term: (term_idf, logWeight)}}
+    documentsInfo = {} # {docId: lenD, {term: (term_idf, logWeight)}}
+    docLens = {} # {docId: len}
     with open(indexFile, 'r') as f:
         line = f.readline()
         while line != '':
             info = line.split(';')
             term, term_idf = info[0].split(':')
 
-            for termQuery in queriesTerms:
-                if termQuery == term:
-                    for doc in info[1:]:
-                        docId, logWeight = doc.split(':')
-                        if docId not in documentsInfo.keys():
-                            documentsInfo[docId] = {}
-                        documentsInfo[docId][termQuery] = (term_idf, logWeight)
+            for doc in info[1:]:
+                docId, logWeight = doc.split(':')
+                docLens[docId] = 1 if docId not in docLens.keys() else docLens[docId] + 1
+                for termQuery in queriesTerms:
+                    if termQuery == term:
+                        documentsInfo[docId] = {} if docId not in documentsInfo.keys() \
+                                                  else {termQuery : (term_idf, logWeight)}
+
             line = f.readline()
     f.close()
-
-    return documentsInfo
+    avgDocLen = sum(docLens.values()) / len(docLens)
+    documentsInfo = [(docLens[docId], documentsInfo[docId]) for docId in documentsInfo.keys()]
+    return documentsInfo, avgDocLen
 
 # def searchForTermInDictionary(self, t):
 #     for ptrInd in range(len(self.termPtrs)):

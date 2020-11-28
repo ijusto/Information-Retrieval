@@ -85,14 +85,14 @@ class Indexer:
                                         key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
 
     # 1.3. Add a method to write the resulting index to file. Use the following format, or a similar one (one term per
-    #       line): term:idf;doc_id:term_weight;doc_id:term_weight;...
+    #       line): term:idf|doc_id:term_weight|doc_id:term_weight|...
     def writeIndexToFile(self, filename):
         if os.path.isfile(filename):
             os.remove(filename)
 
         indexFile = open(filename, 'w')
 
-        indexFile.writelines([term + ':' + str(idf) + ';' + ''.join([str(doc_id) + ':' + str(term_weight) + ';'
+        indexFile.writelines([term + ':' + str(idf) + '|' + ''.join([str(doc_id) + ':' + str(term_weight) + '|'
                                                                      for doc_id, term_weight in pMap.items()]) + '\n'
                               for term, (idf, pMap) in self.postingsMaps.items()])
 

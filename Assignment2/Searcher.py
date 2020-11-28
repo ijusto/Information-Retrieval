@@ -10,16 +10,16 @@ def searchDocuments(queriesTerms, indexFile):
     with open(indexFile, 'r') as f:
         line = f.readline()
         while line != '':
-            info = line.split(';')
+            info = line.split('|')
             info.remove('\n')
             termInfo = info[0].split(':')
-            term_idf = termInfo[-1:][0]
-            term = ''.join(termInfo[:-1])  # necessary for terms with : in them (like websites)
+            term_idf = float(termInfo[-1:][0])
+            term = ''.join(termInfo[:-1])  # necessary for terms with ':' in them (like websites)
             for doc in info[1:]:
                 docId, logWeight = doc.split(':')
                 docLens[docId] = 1 if docId not in docLens.keys() else docLens[docId] + 1
                 if term in queriesTerms:
-                    documentsInfo[docId] = {term: (term_idf, logWeight)}
+                    documentsInfo[docId] = {term: (term_idf, float(logWeight))}
 
             line = f.readline()
     f.close()

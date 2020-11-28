@@ -7,6 +7,9 @@
 def searchDocuments(queriesTerms, indexFile):
     documentsInfo = {}  # {docId: lenD, {term: (term_idf, logWeight)}}
     docLens = {}  # {docId: len}
+    # terms ordered by idf (rarer terms are more important)
+    # and documents inside the term dictionary by weight, so we can exclude the inferior weight terms
+    numberOfDocuments = 70
     with open(indexFile, 'r') as f:
         line = f.readline()
         while line != '':
@@ -21,11 +24,17 @@ def searchDocuments(queriesTerms, indexFile):
 
                 if term in queriesTerms:
                     if docId not in documentsInfo.keys():
+                        numberOfDocuments -= 1
                         documentsInfo[docId] = {}
                         documentsInfo[docId][term]: (term_idf, float(logWeight))
                     else:
                         documentsInfo[docId][term] = (term_idf, float(logWeight))
 
+                if numberOfDocuments == 0:
+                    break
+
+            if numberOfDocuments == 0:
+                break
             line = f.readline()
     f.close()
     avgDocLen = sum(docLens.values()) / len(docLens)

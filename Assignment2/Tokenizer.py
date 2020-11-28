@@ -57,7 +57,7 @@ class BetterTokenizer(Tokenizer):
     def getTerms(self):
         # split by whitespace
         terms = re.split('[\s]', self.text)
-        print(self.text, terms)
+
         for term in terms:
             # maintain websites
             url_match = re.findall(
@@ -98,7 +98,7 @@ class BetterTokenizer(Tokenizer):
                 term = re.sub(r'(&.+;)', '', term)
 
                 # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
-                self.terms = [re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())]
+                self.terms += re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
 
         self.stopWordFilter()
         self.stem()

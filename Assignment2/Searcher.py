@@ -20,7 +20,6 @@ def searchDocuments(queriesTerms, indexFile):
                 docLens[docId] = 1 if docId not in docLens.keys() else docLens[docId] + 1
 
                 if term in queriesTerms:
-                    print(term)
                     if docId not in documentsInfo.keys():
                         documentsInfo[docId] = {}
                         documentsInfo[docId][term]: (term_idf, float(logWeight))

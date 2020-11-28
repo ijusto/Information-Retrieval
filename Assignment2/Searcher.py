@@ -22,7 +22,8 @@ def searchDocuments(queriesTerms, indexFile):
                 if term in queriesTerms:
                     print(term)
                     if docId not in documentsInfo.keys():
-                        documentsInfo[docId] = {term: (term_idf, float(logWeight))}
+                        documentsInfo[docId] = {}
+                        documentsInfo[docId][term]: (term_idf, float(logWeight))
                     else:
                         documentsInfo[docId][term] = (term_idf, float(logWeight))
 

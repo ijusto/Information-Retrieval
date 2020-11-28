@@ -52,6 +52,8 @@ class Ranker:
         return dict(sorted(documentScore.items(), key=lambda items: items[1], reverse=True))
 
     def bm25(self, k1=1.2, b=0.75):
+        # documento: varios termos
+
         # {docId: bm25}
         documentScore = {docId: sum([idf * ((tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (lenD / self.avgDocLen))))
                                      for _, (idf, tf) in termsInfo.items()])

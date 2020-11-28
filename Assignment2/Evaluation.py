@@ -89,7 +89,10 @@ def getResults(file, queries, scores, start, end):
                                  (statistics.median(time) * 1000)))
 
     # Print Query Throughput
-    print('\nQuery Throughput: {:-6.2f} Queries'.format(1 / (sum(time) / 50)))
+    print('\nQuery Throughput: {:-6.2f} Queries/s'.format(1 / (sum(time) / 50)))
+    
+    # Print Median query latency
+    print('\nMedian query latency: {:-6.2f} ms'.format(statistics.median(time) * 1000))
 
 
 def getCalculation(relevance_1, relevance_2, scores, queries, top):

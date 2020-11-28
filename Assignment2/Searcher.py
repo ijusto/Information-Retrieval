@@ -25,5 +25,5 @@ def searchDocuments(queriesTerms, indexFile):
             line = f.readline()
     f.close()
     avgDocLen = sum(docLens.values()) / len(docLens)
-    documentsInfo = [(docLens[docId], documentsInfo[docId]) for docId in documentsInfo.keys()]
+    documentsInfo = {docId: (docLens[docId], documentsInfo[docId]) for docId in documentsInfo.keys()}
     return documentsInfo, avgDocLen

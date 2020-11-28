@@ -30,14 +30,14 @@ class Ranker:
                 documentsWeights[docId][term] = logWeight
 
         # cosine normalization
-        for docId, (_, termsInfo) in self.documentsInfo.items():
-            docWeights = [lnc_weight for term, lnc_weight in documentsWeights.items()]
-            for term, _ in termsInfo.items():
+        for docId in documentsWeights.keys():
+            docWeights = documentsWeights[docId].values()
+            for term in documentsWeights[docId].keys():
                 documentsWeights[docId][term] /= getDocL2Norm(docWeights)
 
         # ltc
         # tfidf
-        for term, (idf, logWeight) in queriesWeights.keys():
+        for term, (idf, logWeight) in queriesWeights.items():
             queriesWeights[term] = logWeight * idf
 
         # cosine normalization

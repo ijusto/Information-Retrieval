@@ -13,6 +13,8 @@ class Ranker:
         self.documentsInfo = documentsInfo # {docId: {term: (term_idf, logWeight)}}
 
     def lnc_ltc(self):
+        documentScore = {} # {docId: lnc_ltc}
+
         queriesWeights = {} # {term: weight}
         documentsWeights = {} # {docId: {term: lnc_weight}}
 
@@ -40,6 +42,10 @@ class Ranker:
         tf_idfs = queriesWeights.values()
         for term, tf_idf in queriesWeights.keys():
             queriesWeights[term] = tf_idf / getDocL2Norm(tf_idfs)
+
+        # lnc-ltc
+        for docId, termsInfo in self.documentsInfo.items():
+            documentScore[docId] = sum([lnc_weight*queriesWeights[term] for term, lnc_weight in termsInfo.items()])
 
 
     def bm25(self, lenD, avgdl, k1 = 1.2, b = 0.75):

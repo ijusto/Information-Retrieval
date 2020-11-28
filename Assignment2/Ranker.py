@@ -42,12 +42,12 @@ class Ranker:
 
         # cosine normalization
         tf_idfs = queriesWeights.values()
-        for term, tf_idf in queriesWeights.keys():
+        for term, tf_idf in queriesWeights.items():
             queriesWeights[term] = tf_idf / getDocL2Norm(tf_idfs)
 
         # lnc-ltc
-        for docId, (_, termsInfo) in self.documentsInfo.items():
-            documentScore[docId] = sum([lnc_weight * queriesWeights[term] for term, lnc_weight in termsInfo.items()])
+        for docId in documentsWeights.keys():
+            documentScore[docId] = sum([lnc_weight * queriesWeights[term] for term, lnc_weight in documentsWeights[docId].items()])
 
         return dict(sorted(documentScore.items(), key=lambda items: items[1], reverse=True))
 

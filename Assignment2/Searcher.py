@@ -18,8 +18,13 @@ def searchDocuments(queriesTerms, indexFile):
             for doc in info[1:]:
                 docId, logWeight = doc.split(':')
                 docLens[docId] = 1 if docId not in docLens.keys() else docLens[docId] + 1
+
                 if term in queriesTerms:
-                    documentsInfo[docId] = {term: (term_idf, float(logWeight))}
+                    print(term)
+                    if docId not in documentsInfo.keys():
+                        documentsInfo[docId] = {term: (term_idf, float(logWeight))}
+                    else:
+                        documentsInfo[docId][term] = (term_idf, float(logWeight))
 
             line = f.readline()
     f.close()

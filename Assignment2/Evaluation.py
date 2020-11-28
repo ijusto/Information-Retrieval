@@ -104,7 +104,10 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
     for num, query in enumerate(queries):
         # High Scores List (top 10, top 20 or top 50)
         highScores = list(scores[num].keys())[:top]
-
+        print(queries[num])
+        print(scores[num])
+        print(highScores)
+        print(len(highScores))
         # For this query, the number of relevant documents
         relevant_docs_total = len(relevance_1[num]) + len(relevance_2[num])
 
@@ -114,9 +117,10 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
         mean = 0
         for doc in range(top):
             # If document ID is in relevance dictionaries
-            if highScores[doc] in relevance_1[num] or highScores[doc] in relevance_2[num]:
-                relevant_scores += 1
-                mean += relevant_scores / (relevant_scores + non_relevant_scores)
+            if num in relevance_1.keys() or num in relevance_2.keys():
+                if highScores[doc] in relevance_1[num] or highScores[doc] in relevance_2[num]:
+                    relevant_scores += 1
+                    mean += relevant_scores / (relevant_scores + non_relevant_scores)
             # If document ID isn't in relevance dictionaries (relevance = 0)
             else:
                 non_relevant_scores += 1

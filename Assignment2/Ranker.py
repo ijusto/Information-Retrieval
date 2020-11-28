@@ -47,6 +47,7 @@ class Ranker:
         # lnc-ltc
         for docId, termsInfo in self.documentsInfo.items():
             documentScore[docId] = sum([lnc_weight * queriesWeights[term] for term, lnc_weight in termsInfo.items()])
+        return documentScore
 
         #return dict(sorted(documentScore.items(), key=lambda items: items[1]))
 
@@ -56,3 +57,4 @@ class Ranker:
                                      for _, (idf, tf) in termsInfo.items()])
                          for docId, termsInfo in self.documentsInfo.items()}
         #return dict(sorted(documentScore.items(), key=lambda items: items[1]))
+        return documentScore

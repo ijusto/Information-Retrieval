@@ -10,12 +10,15 @@ from Indexer import Indexer
 from QueryOperations import QueryOperations
 from Ranker import Ranker
 from Searcher import Searcher
+from timeit import default_timer as timer
 
 
 def main(argv):
     collectionFile = ''
     tokenizerType = ''
     queriesFile = ''
+    start = []
+    end = []
     try:
         opts, args = getopt.getopt(argv, "hf:t:q:", ["collectionFile=", "tokenizerType=", "queriesFilePath="])
     except getopt.GetoptError:
@@ -55,6 +58,7 @@ def main(argv):
     f.close()
 
     for query in queries:
+        start.append(timer())
         # Query operations
         queriesTerms = QueryOperations(tokenizerType, query).getQueriesTerms()
 
@@ -63,6 +67,7 @@ def main(argv):
 
         #Ranker
         ranker = Ranker(searcher.searchDocuments('index'))
+        end.append(timer())
 
 
 if __name__ == "__main__":

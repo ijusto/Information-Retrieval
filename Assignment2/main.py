@@ -73,6 +73,10 @@ def main(argv):
 
         #Ranker
         ranker = Ranker(searcher.searchDocuments('index'))
+        end.append(timer())
+        
+        #FAZER PRINT 1.3
+        
         
         # If rankType = 0 (tf-idf)
         if rankType == '0':
@@ -85,7 +89,7 @@ def main(argv):
             _ = ranker.bm25(lenD, avgdl, 1.2, 0.75)
 
             
-        end.append(timer())
+        
 
 
 if __name__ == "__main__":

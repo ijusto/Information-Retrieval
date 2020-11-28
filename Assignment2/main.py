@@ -6,10 +6,10 @@ import getopt
 import sys
 from os import path
 
+import Evaluation
 from Indexer import *
 import QueryOperations
 from Ranker import *
-from Evaluation import *
 import Searcher
 from timeit import default_timer as timer
 
@@ -68,6 +68,8 @@ def main(argv):
     queries = f.readlines()
     f.close()
 
+    scores = []
+
     for query in queries:
         start.append(timer())
 
@@ -83,18 +85,18 @@ def main(argv):
 
         # If rankType = 0 (tf-idf)
         if rankType == '0':
-            scores = ranker.lnc_ltc()
+            scores += [ranker.lnc_ltc()]
 
         # If rankType = 1 (BM25)
         else:
             # lenD is the length of the document D in words
             # avgdl is the average document length in the text collection from which documents are drawn
-            scores = ranker.bm25(1.2, 0.75)
-            
+            scores += [ranker.bm25(1.2, 0.75)]
+
         end.append(timer())
     
-    # EVALUATION
-    getResults('queries.relevance.txt', queries, scores, start, end)
+    # Evaluation
+    Evaluation.getResults('queries.relevance.txt', queries, scores, start, end)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

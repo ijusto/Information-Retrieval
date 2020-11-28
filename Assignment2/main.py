@@ -83,13 +83,14 @@ def main(argv):
 
         # If rankType = 0 (tf-idf)
         if rankType == '0':
-            _ = ranker.lnc_ltc()
+            scores = ranker.lnc_ltc()
 
         # If rankType = 1 (BM25)
         else:
             # lenD is the length of the document D in words
             # avgdl is the average document length in the text collection from which documents are drawn
-            _ = ranker.bm25(1.2, 0.75)
+            scores = ranker.bm25(1.2, 0.75)
+            
         end.append(timer())
     
     # EVALUATION

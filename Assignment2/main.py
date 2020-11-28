@@ -71,6 +71,7 @@ def main(argv):
     scores = []
 
     for query in queries:
+        # Start time (latency purpose)
         start.append(timer())
 
         # Query Operations
@@ -89,6 +90,7 @@ def main(argv):
         else:
             scores += [ranker.bm25(1.2, 0.75)]
 
+        # End time (latency purpose)
         end.append(timer())
     
     # Evaluation

@@ -34,7 +34,7 @@ def getResults(file, queries, scores, start, end):
 
     # Time calculation
     time = [end[i] - start[i] for i in range(len(start))]
-
+    
     # Metrics Calculation
     precision10, recall10, f_measure10, avg_precision10, ndcgain10 = getCalculation(relevance_1, relevance_2, scores,
                                                                                     queries, 10)  # Top 10
@@ -171,7 +171,7 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
         dcg = rel[0]  # discounted cumulative gain
         idcg = rel_i[0]  # ideal discounted cumulative gain
 
-        for i in range(1, top):  # Formulation
+        for i in range(top):  # Formulation
             dcg += rel[i] / math.log(i + 1, 2)
             idcg += rel_i[i] / math.log(i + 1, 2)
 

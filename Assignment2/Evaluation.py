@@ -1,5 +1,5 @@
 # Evaluation.
-#  Transforms the query to improve retrieval.
+#  Evaluation calculates metrics.
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 

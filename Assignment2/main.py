@@ -8,6 +8,7 @@ from os import path
 
 from Indexer import Indexer
 from QueryOperations import QueryOperations
+from Ranker import Ranker
 from Searcher import Searcher
 
 
@@ -49,14 +50,19 @@ def main(argv):
     indexer = Indexer(collectionFile, tokenizerType)
     indexer.writeIndexToFile('index')
 
-    # Query operations
-    queryOperations = QueryOperations(tokenizerType, queriesFile)
-    queryOperations.readQueries()
-    queriesTerms = queryOperations.getQueriesTerms()
+    f = open(queriesFile, 'r')
+    queries = f.readlines()
+    f.close()
 
-    # Searcher
-    searcher = Searcher(queriesTerms)
-    searcher.getQueryScoresFromIndexer('index')
+    for query in queries:
+        # Query operations
+        queriesTerms = QueryOperations(tokenizerType, query).getQueriesTerms()
+
+        # Searcher
+        searcher = Searcher(queriesTerms)
+
+        #Ranker
+        ranker = Ranker(searcher.searchDocuments('index'))
 
 
 if __name__ == "__main__":

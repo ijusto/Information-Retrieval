@@ -11,34 +11,28 @@ class Searcher:
     #  @param self The object pointer.
     def __init__(self, queriesTerms):
         self.queriesTerms = queriesTerms
-        self.ltcQueries = [] # list of {termQuery: {docId: ltc_weight}} for each query
+        self.documentsInfo = {} # {docId: {term: (term_idf, weight)}}
         #self.termPtrs = termPtrs
         #self.postingsPtrs = postingsPtrs
 
-    def getQueryScoresFromIndexer(self, indexFile):
+    def searchDocuments(self, indexFile):
         with open(indexFile, 'r') as f:
             line = f.readline()
             while line != '':
                 info = line.split(';')
                 term, term_idf = info[0].split(':')
 
-                for queryIndex in range(len(self.queriesTerms)):
-                    self.ltcQueries += [{}]
-                    for termQuery in self.queriesTerms[queryIndex]:
-                        if termQuery == term:
-                            self.ltcQueries[queryIndex][termQuery] = {}
-                            for doc in info[1:]:
-                                docid, tf = doc.split(':')
-                                self.ltcQueries[queryIndex][termQuery][docid] = getTFIDFtWeightQuery(tf, term_idf)  # lt
+                for termQuery in self.queriesTerms:
+                    if termQuery == term:
+                        for doc in info[1:]:
+                            docId, tf = doc.split(':')
+                            if docId not in self.documentsInfo.keys():
+                                self.documentsInfo[docId] = {}
+                            self.documentsInfo[docId][termQuery] = (term_idf, tf)
                 line = f.readline()
         f.close()
 
-        # cosine normalization
-        for queryIndex in range(len(self.queriesTerms)):
-            self.ltcQueries[queryIndex] = {term: {docId: self.ltcQueries[queryIndex][term][docId] / getDocL2Norm(docId, self.ltcQueries[queryIndex]) # ltc
-                                                for docId in self.ltcQueries[queryIndex][term].keys()}
-                                                for term in self.ltcQueries[queryIndex].keys()}
-
+        return self.documentsInfo
 
     # def searchForTermInDictionary(self, t):
     #     for ptrInd in range(len(self.termPtrs)):

@@ -10,24 +10,14 @@ class QueryOperations:
     # The constructor.
     #  @param self The object pointer.
     #  @param tokenizerType The type of tokenizing to do to each document
-    def __init__(self, tokenizerType, queriesFile):
+    def __init__(self, tokenizerType, query):
         self.tokenizerType = tokenizerType
-        self.queriesFile = queriesFile
-        self.queries = []
-
-    def readQueries(self):
-        f = open(self.queriesFile, 'r')
-        self.queries = f.readlines()
-        f.close()
+        self.query = query
 
     def getQueriesTerms(self):
-        queriesTerms = []
-        for query in self.queries:
-            if self.tokenizerType == '0':  # simple
-                tokenizer = Tokenizer.SimpleTokenizer(query.replace('\n', ' '))
-            else:  # better
-                tokenizer = Tokenizer.BetterTokenizer(query.replace('\n', ' '))
+        if self.tokenizerType == '0':  # simple
+            tokenizer = Tokenizer.SimpleTokenizer(self.query.replace('\n', ' '))
+        else:  # better
+            tokenizer = Tokenizer.BetterTokenizer(self.query.replace('\n', ' '))
 
-            queriesTerms += tokenizer.getTerms()
-
-        return queriesTerms
+        return tokenizer.getTerms()

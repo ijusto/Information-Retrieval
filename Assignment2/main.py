@@ -72,6 +72,7 @@ def main(argv):
 
     for query in queries:
         start.append(timer())
+
         # Query Operations
         queryTerms = QueryOperations.getQueriesTerms(tokenizerType, query)
 
@@ -80,8 +81,6 @@ def main(argv):
 
         # Ranker
         ranker = Ranker(documentsInfo, avgDocLen)
-
-        # FAZER PRINT 1.3
 
         # If rankType = 0 (tf-idf)
         if rankType == '0':

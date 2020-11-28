@@ -48,14 +48,13 @@ class Ranker:
         # lnc-ltc
         for docId, (_, termsInfo) in self.documentsInfo.items():
             documentScore[docId] = sum([lnc_weight * queriesWeights[term] for term, lnc_weight in termsInfo.items()])
-        return documentScore
 
-        #return dict(sorted(documentScore.items(), key=lambda items: items[1]))
+        return dict(sorted(documentScore.items(), key=lambda items: items[1], reverse=True))
 
     def bm25(self, k1=1.2, b=0.75):
         # {docId: bm25}
         documentScore = {docId: sum([idf * ((tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (lenD / self.avgDocLen))))
                                      for _, (idf, tf) in termsInfo.items()])
                          for docId, (lenD, termsInfo) in self.documentsInfo.items()}
-        #return dict(sorted(documentScore.items(), key=lambda items: items[1]))
-        return documentScore
+
+        return dict(sorted(documentScore.items(), key=lambda items: items[1], reverse=True))

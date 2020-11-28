@@ -67,6 +67,19 @@ def main(argv):
 
         #Ranker
         ranker = Ranker(searcher.searchDocuments('index'))
+        
+        # If rankType = 0 (tf-idf)
+        if rankType == '0':
+            
+                
+        # If rankType = 1 (BM25)
+        elif rankType == '1':
+           
+           
+        else:
+            print('Please enter [ 0 ] - tf-idf ranking OR [ 1 ] - BM25 ranking!')
+            sys.exit()
+            
         end.append(timer())
 
 

@@ -70,10 +70,11 @@ class Indexer:
                     self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
 
         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
-        # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: {docId: weight}}
+        # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: idf, {docId: weight}}
         # logarithmic term frequency
-        self.postingsMaps = {term: {docId: getLogWeight(term, docId, self.postingsMaps)
-                                    for docId in self.postingsMaps[term].keys()}
+        self.postingsMaps = {term: (getIDFt(term, self.postingsMaps, self.N),
+                                    {docId: getLogWeight(term, docId, self.postingsMaps)
+                                    for docId in self.postingsMaps[term].keys()})
                              for term in self.postingsMaps.keys()}
 
         # order by term_idf and then by term_weight (both reversed)

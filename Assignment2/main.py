@@ -94,7 +94,7 @@ def main(argv):
         end.append(timer())
 
     # Evaluation
-    Evaluation.getResults('queries.relevance.txt', queries, scores, start, end)
+    Evaluation.getResults('./data/queries.relevance.txt', queries, scores, start, end)
 
 
 if __name__ == "__main__":

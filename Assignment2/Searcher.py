@@ -3,9 +3,10 @@
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 
+
 def searchDocuments(queriesTerms, indexFile):
-    documentsInfo = {} # {docId: lenD, {term: (term_idf, logWeight)}}
-    docLens = {} # {docId: len}
+    documentsInfo = {}  # {docId: lenD, {term: (term_idf, logWeight)}}
+    docLens = {}  # {docId: len}
     with open(indexFile, 'r') as f:
         line = f.readline()
         while line != '':
@@ -13,14 +14,14 @@ def searchDocuments(queriesTerms, indexFile):
             info.remove('\n')
             termInfo = info[0].split(':')
             term_idf = termInfo[-1:]
-            term = ''.join(termInfo[:-1]) # necessary for terms with : in them (like websites)
+            term = ''.join(termInfo[:-1])  # necessary for terms with : in them (like websites)
             for doc in info[1:]:
                 docId, logWeight = doc.split(':')
                 docLens[docId] = 1 if docId not in docLens.keys() else docLens[docId] + 1
                 for termQuery in queriesTerms:
                     if termQuery == term:
                         documentsInfo[docId] = {} if docId not in documentsInfo.keys() \
-                                                  else {termQuery : (term_idf, logWeight)}
+                            else {termQuery: (term_idf, logWeight)}
 
             line = f.readline()
     f.close()

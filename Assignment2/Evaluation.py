@@ -92,7 +92,7 @@ def getResults(file, queries, scores, start, end):
     print('\nQuery Throughput: {:-6.2f} Queries/s'.format(1 / (sum(time) / 50)))
     
     # Print Median query latency
-    print('\nMedian query latency: {:-6.2f} ms'.format(statistics.median(time) * 1000))
+    print('\nMedian query latency: {:-6.2f} ms'.format((statistics.median(time) * 1000)))
 
 
 def getCalculation(relevance_1, relevance_2, scores, queries, top):
@@ -115,14 +115,9 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
         mean = 0
         for doc in range(top):
             # If document ID is in relevance dictionaries
-            if num in relevance_1.keys():
-                if highScores[doc] in relevance_1[num]:
-                    relevant_scores += 1
-                    mean += relevant_scores / (relevant_scores + non_relevant_scores)
-            elif num in relevance_2.keys():
-                if highScores[doc] in relevance_2[num]:
-                    relevant_scores += 1
-                    mean += relevant_scores / (relevant_scores + non_relevant_scores)
+            if highScores[doc] in relevance_1[num] or highScores[doc] in relevance_2[num]:
+                relevant_scores += 1
+                mean += relevant_scores / (relevant_scores + non_relevant_scores)
             # If document ID isn't in relevance dictionaries (relevance = 0)
             else:
                 non_relevant_scores += 1

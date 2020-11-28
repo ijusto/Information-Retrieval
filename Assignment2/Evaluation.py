@@ -171,7 +171,7 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
         dcg = rel[0]  # discounted cumulative gain
         idcg = rel_i[0]  # ideal discounted cumulative gain
 
-        for i in range(top):  # Formulation
+        for i in range(1, top):  # Formulation
             dcg += rel[i] / math.log(i + 1, 2)
             idcg += rel_i[i] / math.log(i + 1, 2)
 

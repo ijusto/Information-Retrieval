@@ -16,7 +16,9 @@ class Tokenizer:
         self.text = text
 
     def changeText(self, text):
+        self.terms = []
         self.text = text
+
 
 # A simple tokenizer that replaces all non-alphabetic characters by a space, lowercase tokens, splits on  whitespace,
 #  and ignores all tokens with less than 3 characters.
@@ -38,7 +40,8 @@ class SimpleTokenizer(Tokenizer):
                               .lower())
         # ignores all tokens with less than 3 characters
         self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
-
+        print(self.terms)
+        print('\n')
         return self.terms
 
 
@@ -80,7 +83,8 @@ class BetterTokenizer(Tokenizer):
             if url_match:
                 if url_match[0].endswith(').') or url_match[0].endswith('),'):
                     url_match = [url_match[0][:-2]]  # ex: https://www.genomedetective.com/app/typingtool/cov).
-                elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')') or url_match[0].endswith('}'):
+                elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')') or \
+                        url_match[0].endswith('}'):
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
             elif email_match:

@@ -46,7 +46,7 @@ def getResults(file, queries, scores, start, end):
     # Print header
     dash = '-' * 168
     print(dash)
-    print('|        Precision          |          Recall           |        F-measure          |     Average '
+    print('        |        Precision          |          Recall           |        F-measure          |     Average '
           'Precision     |           NDCG            |      Latency\nQuery # |  @10      @20      @50    |  @10      '
           '@20      @50    |  @10      @20      @50    |  @10      @20      @50    |  @10      @20      @50    | ')
     print(dash)
@@ -59,7 +59,7 @@ def getResults(file, queries, scores, start, end):
               '    {:-6.2f}   {:-6.2f}   {:-6.2f}'
               '    {:-6.2f}   {:-6.2f}   {:-6.2f}'
               '    {:-6.2f}   {:-6.2f}   {:-6.2f}'
-              '    {:-10.2f}'.format(50,
+              '    {:-10.2f}'.format(idx+1,
                                      (precision10[idx] * 100), (precision20[idx] * 100), (precision50[idx] * 100),
                                      (recall10[idx] * 100), (recall20[idx] * 100), (recall50[idx] * 100),
                                      (f_measure10[idx] * 100), (f_measure20[idx] * 100), (f_measure50[idx] * 100),

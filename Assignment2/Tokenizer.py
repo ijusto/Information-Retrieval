@@ -40,8 +40,6 @@ class SimpleTokenizer(Tokenizer):
                               .lower())
         # ignores all tokens with less than 3 characters
         self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
-        print(self.terms)
-        print('\n')
         return self.terms
 
 

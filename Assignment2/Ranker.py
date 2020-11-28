@@ -31,7 +31,7 @@ class Ranker:
 
         # cosine normalization
         for docId, (_, termsInfo) in self.documentsInfo.items():
-            docWeights = [lnc_weight for term, lnc_weight in termsInfo.items()]
+            docWeights = [lnc_weight for term, lnc_weight in documentsWeights.items()]
             for term, _ in termsInfo.items():
                 documentsWeights[docId][term] /= getDocL2Norm(docWeights)
 
@@ -52,8 +52,6 @@ class Ranker:
         return dict(sorted(documentScore.items(), key=lambda items: items[1], reverse=True))
 
     def bm25(self, k1=1.2, b=0.75):
-        # documento: varios termos
-
         # {docId: bm25}
         documentScore = {docId: sum([idf * ((tf * (k1 + 1)) / (tf + k1 * (1 - b + b * (lenD / self.avgDocLen))))
                                      for _, (idf, tf) in termsInfo.items()])

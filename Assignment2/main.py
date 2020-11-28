@@ -67,6 +67,10 @@ def main(argv):
 
         #Ranker
         ranker = Ranker(searcher.searchDocuments('index'))
+        end.append(timer())
+        
+        #FAZER PRINT 1.3
+        
         
         # If rankType = 0 (tf-idf)
         if rankType == '0':
@@ -80,7 +84,7 @@ def main(argv):
             print('Please enter [ 0 ] - tf-idf ranking OR [ 1 ] - BM25 ranking!')
             sys.exit()
             
-        end.append(timer())
+        
 
 
 if __name__ == "__main__":

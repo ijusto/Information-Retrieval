@@ -7,7 +7,7 @@ Usage
     
 Example:
 
-    python3 main.py -f ./data/all_sources_metadata_2020-03-13.csv -t 1 -q ./data/queries.txt -r 0
+    python3 main.py -f ./data/metadata_2020-03-27.csv -t 1 -q ./data/queries.txt -r 0
 
 
     

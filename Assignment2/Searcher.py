@@ -11,7 +11,7 @@ class Searcher:
     #  @param self The object pointer.
     def __init__(self, queriesTerms):
         self.queriesTerms = queriesTerms
-        self.documentsInfo = {} # {docId: {term: (term_idf, weight)}}
+        self.documentsInfo = {} # {docId: {term: (term_idf, logWeight)}}
         #self.termPtrs = termPtrs
         #self.postingsPtrs = postingsPtrs
 
@@ -25,10 +25,10 @@ class Searcher:
                 for termQuery in self.queriesTerms:
                     if termQuery == term:
                         for doc in info[1:]:
-                            docId, tf = doc.split(':')
+                            docId, logWeight = doc.split(':')
                             if docId not in self.documentsInfo.keys():
                                 self.documentsInfo[docId] = {}
-                            self.documentsInfo[docId][termQuery] = (term_idf, tf)
+                            self.documentsInfo[docId][termQuery] = (term_idf, logWeight)
                 line = f.readline()
         f.close()
 

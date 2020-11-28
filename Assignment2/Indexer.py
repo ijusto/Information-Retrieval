@@ -105,16 +105,16 @@ class Indexer:
         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
         # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: {docId: weight}}
         # logarithmic term frequency
-        self.postingsMaps = {term: {docId: getTFIDFtWeight(term, docId, self.postingsMaps, self.N)
+        self.postingsMaps = {term: {docId: getLogWeight(term, docId, self.postingsMaps)
                                     for docId in self.postingsMaps[term].keys()}
                              for term in self.postingsMaps.keys()}
 
         # then to {term: (term_idf, {docId: weight (length normalized)}})
         # cosine normalization
-        self.postingsMaps = {term: (getIDFt(term, self.postingsMaps, self.N),
-                                    {docId: self.postingsMaps[term][docId] / getDocL2Norm(docId, self.postingsMaps)
-                                     for docId in self.postingsMaps[term].keys()})
-                             for term in self.postingsMaps.keys()}
+        #self.postingsMaps = {term: (getIDFt(term, self.postingsMaps, self.N),
+        #                            {docId: self.postingsMaps[term][docId] / getDocL2Norm(docId, self.postingsMaps)
+        #                             for docId in self.postingsMaps[term].keys()})
+        #                     for term in self.postingsMaps.keys()}
 
         # order by term_idf and then by term_weight (both reversed)
         # Postings of low-idf terms have many docs

@@ -15,6 +15,8 @@ class Tokenizer:
     def __init__(self, text):
         self.text = text
 
+    def changeText(self, text):
+        self.text = text
 
 # A simple tokenizer that replaces all non-alphabetic characters by a space, lowercase tokens, splits on  whitespace,
 #  and ignores all tokens with less than 3 characters.

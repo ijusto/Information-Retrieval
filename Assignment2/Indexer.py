@@ -51,12 +51,13 @@ class Indexer:
         collection = CorpusReader.CorpusReader(self.collectionPath).readCorpus()  # list((doi, title, abstract))
         self.N = len(collection)
 
-        for doi, title, abstract in CorpusReader.CorpusReader(self.collectionPath).readCorpus():
-            if self.tokenizerType == '0':  # simple
-                tokenizer = Tokenizer.SimpleTokenizer(title + " " + abstract)
-            else:  # better
-                tokenizer = Tokenizer.BetterTokenizer(title + " " + abstract)
+        if self.tokenizerType == '0':  # simple
+            tokenizer = Tokenizer.SimpleTokenizer('')
+        else:  # better
+            tokenizer = Tokenizer.BetterTokenizer('')
 
+        for doi, title, abstract in collection:
+            tokenizer.changeText(title + " " + abstract)
             terms = tokenizer.getTerms()
 
             # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: term_freq} }

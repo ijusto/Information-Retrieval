@@ -5,10 +5,8 @@
 import getopt
 import sys
 from os import path
-
 import Evaluation
 from Indexer import *
-import QueryOperations
 from Ranker import *
 import Searcher
 from timeit import default_timer as timer
@@ -69,12 +67,18 @@ def main(argv):
 
     scores = []
 
+    if tokenizerType == '0':  # simple
+        tokenizer = Tokenizer.SimpleTokenizer('')
+    else:  # better
+        tokenizer = Tokenizer.BetterTokenizer('')
+
     for query in queries:
         # Start time (latency purpose)
         start.append(timer())
 
         # Query Operations
-        queryTerms = QueryOperations.getQueriesTerms(tokenizerType, query)
+        tokenizer.changeText(query)
+        queryTerms = tokenizer.getTerms()
 
         # Searcher
         documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index')

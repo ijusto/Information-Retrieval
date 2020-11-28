@@ -75,8 +75,7 @@ def getResults(file, queries, scores, start, end):
           '    {:-6.2f}   {:-6.2f}   {:-6.2f}'
           '    {:-6.2f}   {:-6.2f}   {:-6.2f}'
           '    {:-6.2f}   {:-6.2f}   {:-6.2f}'
-          '    {:-10.2f}'.format(50,
-                                 (statistics.mean(precision10) * 100), (statistics.mean(precision20) * 100),
+          '    {:-10.2f}'.format((statistics.mean(precision10) * 100), (statistics.mean(precision20) * 100),
                                  (statistics.mean(precision50) * 100),
                                  (statistics.mean(recall10) * 100), (statistics.mean(recall20) * 100),
                                  (statistics.mean(recall50) * 100),

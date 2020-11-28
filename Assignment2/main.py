@@ -72,25 +72,22 @@ def main(argv):
 
     for query in queries:
         start.append(timer())
+        # Query Operations
+        queryTerms = QueryOperations.getQueriesTerms(tokenizerType, query)
+
+        # Searcher
+        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index')
 
         # Ranker
-        ranker = Ranker(
-                    # Searcher
-                    Searcher.searchDocuments(
-                        # Query Operations
-                        QueryOperations.getQueriesTerms(tokenizerType, query),
-                    'index'))
+        ranker = Ranker(documentsInfo, avgDocLen)
 
         # FAZER PRINT 1.3
 
         # If rankType = 0 (tf-idf)
         if rankType == '0':
             scores += [ranker.lnc_ltc()]
-
         # If rankType = 1 (BM25)
         else:
-            # lenD is the length of the document D in words
-            # avgdl is the average document length in the text collection from which documents are drawn
             scores += [ranker.bm25(1.2, 0.75)]
 
         end.append(timer())

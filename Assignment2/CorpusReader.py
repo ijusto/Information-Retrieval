@@ -24,7 +24,7 @@ class CorpusReader:
             for iRow in range(len(rows)):
                 title = rows[iRow][3]
                 abstract = rows[iRow][8]
-                doi = rows[iRow][4]
+                doi = rows[iRow][0]
                 if abstract is not None and abstract != '' and title is not None and title != '' and doi is not None and doi != '':
                     corpus += [(doi, title, abstract)]
 

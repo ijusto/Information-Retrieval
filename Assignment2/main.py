@@ -9,6 +9,7 @@ from os import path
 from Indexer import *
 import QueryOperations
 from Ranker import *
+from Evaluation import *
 import Searcher
 from timeit import default_timer as timer
 
@@ -91,7 +92,7 @@ def main(argv):
             # lenD is the length of the document D in words
             # avgdl is the average document length in the text collection from which documents are drawn
             _ = ranker.bm25(lenD, avgdl, 1.2, 0.75)
-
+    getResults('queries.relevance.txt', queries, scores, start, end)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

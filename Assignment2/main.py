@@ -17,21 +17,22 @@ def main(argv):
     collectionFile = ''
     tokenizerType = ''
     queriesFile = ''
+    rankType = ''
     start = []
     end = []
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:", ["collectionFile=", "tokenizerType=", "queriesFilePath="])
+        opts, args = getopt.getopt(argv, "hf:t:q:", ["collectionFile=", "tokenizerType=", "queriesFilePath=", "rankType="])
     except getopt.GetoptError:
-        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath>')
+        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>')
         sys.exit()
 
-    if len(opts) != 3:
-        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath>')
+    if len(opts) != 4:
+        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>')
         sys.exit()
 
     for opt, arg in opts:
         if opt == '-h':
-            print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better>')
+            print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>')
             sys.exit()
         elif opt in ("-f", "--collectionFile"):
             if not path.exists(arg):
@@ -48,6 +49,11 @@ def main(argv):
                 print('Incorrect path to queries file.')
                 sys.exit()
             queriesFile = arg
+        elif opt in ("-r", "--rankType"):
+            if arg != '0' and arg != '1':
+                print('Incorrect rank type. TF-IDF: 0, BM25: 1.')
+                sys.exit()
+            rankType = arg
 
     # Indexer
     indexer = Indexer(collectionFile, tokenizerType)
@@ -70,15 +76,14 @@ def main(argv):
         
         # If rankType = 0 (tf-idf)
         if rankType == '0':
-            
+            _ = ranker.lnc_ltc()
                 
         # If rankType = 1 (BM25)
-        elif rankType == '1':
-           
-           
         else:
-            print('Please enter [ 0 ] - tf-idf ranking OR [ 1 ] - BM25 ranking!')
-            sys.exit()
+            # lenD is the length of the document D in words
+            # avgdl is the average document length in the text collection from which documents are drawn
+            _ = ranker.bm25(lenD, avgdl, 1.2, 0.75)
+
             
         end.append(timer())
 

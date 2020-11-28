@@ -59,7 +59,7 @@ def main(argv):
             rankType = arg
 
     # Indexer
-    Indexer(collectionFile, tokenizerType).writeIndexToFile('index')
+    (Indexer(collectionFile, tokenizerType)).writeIndexToFile('index')
 
     f = open(queriesFile, 'r')
     queries = f.read().splitlines()

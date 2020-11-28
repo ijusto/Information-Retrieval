@@ -48,15 +48,15 @@ class Indexer:
     #  @param self The object pointer.
     def index(self):
 
-        collection = CorpusReader.CorpusReader(self.collectionPath).readCorpus()  # list((doi, title, abstract))
-        self.N = len(collection)
+        self.N = 0
 
         if self.tokenizerType == '0':  # simple
             tokenizer = Tokenizer.SimpleTokenizer('')
         else:  # better
             tokenizer = Tokenizer.BetterTokenizer('')
 
-        for doi, title, abstract in collection:
+        for doi, title, abstract in CorpusReader.CorpusReader(self.collectionPath).readCorpus():
+            self.N += 1
             tokenizer.changeText(title + " " + abstract)
             terms = tokenizer.getTerms()
 
@@ -80,10 +80,10 @@ class Indexer:
 
         # order by term_idf and then by term_weight (both reversed)
         # Postings of low-idf terms have many docs
-        self.postingsMaps = dict(sorted({t: (idf, dict(sorted({doid: w for doid, w in pMap.items()}.items(),
-                                                              key=lambda items: items[1], reverse=True)))
-                                         for t, (idf, pMap) in self.postingsMaps.items()}.items(),
-                                        key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
+        #self.postingsMaps = dict(sorted({t: (idf, dict(sorted({doid: w for doid, w in pMap.items()}.items(),
+        #                                                      key=lambda items: items[1], reverse=True)))
+        #                                 for t, (idf, pMap) in self.postingsMaps.items()}.items(),
+        #                                key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
 
     # 1.3. Add a method to write the resulting index to file. Use the following format, or a similar one (one term per
     #       line): term:idf|doc_id:term_weight|doc_id:term_weight|...

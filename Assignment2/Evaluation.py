@@ -20,7 +20,7 @@ def getResults(file, queries, scores, start, end):
     relevance_1 = dict()
     relevance_2 = dict()
     # Fill dict with query number
-    for idx in range(1, len(queries)):
+    for idx in range(len(queries)):
         relevance_1[idx] = dict()
         relevance_2[idx] = dict()
     for line in lines:
@@ -33,7 +33,7 @@ def getResults(file, queries, scores, start, end):
             relevance_2[int(column[0]) - 1][column[1]] = 0
 
     # Time calculation
-    time = [end[i] - start[i] for i in range(0, len(start))]
+    time = [end[i] - start[i] for i in range(len(start))]
 
     # Metrics Calculation
     precision10, recall10, f_measure10, avg_precision10, ndcgain10 = getCalculation(relevance_1, relevance_2, scores,
@@ -112,7 +112,7 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
         relevant_scores = 0
         non_relevant_scores = 0
         mean = 0
-        for doc in range(0, top):
+        for doc in range(top):
             # If document ID is in relevance dictionaries
             if highScores[doc] in relevance_1[num] or highScores[doc] in relevance_2[num]:
                 relevant_scores += 1

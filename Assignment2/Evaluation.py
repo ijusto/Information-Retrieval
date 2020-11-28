@@ -120,7 +120,7 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
                 non_relevant_scores += 1
 
         # Relevant document number not in high scores
-        relevant_docs_left = relevant_docs_total - relevant_docs_scores
+        relevant_docs_left = relevant_docs_total - relevant_scores
 
         # __________ METRICS __________
 

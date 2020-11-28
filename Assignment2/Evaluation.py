@@ -100,6 +100,7 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
     avg_precision = []
     ndcgain = []
 
+    print(scores)
     for num, query in enumerate(queries):
         # High Scores List (top 10, top 20 or top 50)
         highScores = list(scores[num].keys())[:top]

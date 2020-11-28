@@ -7,8 +7,8 @@ import Tokenizer
 
 def getQueriesTerms(tokenizerType, query):
     if tokenizerType == '0':  # simple
-        tokenizer = Tokenizer.SimpleTokenizer(query.replace('\n', ' '))
+        tokenizer = Tokenizer.SimpleTokenizer(query)
     else:  # better
-        tokenizer = Tokenizer.BetterTokenizer(query.replace('\n', ' '))
+        tokenizer = Tokenizer.BetterTokenizer(query)
 
     return tokenizer.getTerms()

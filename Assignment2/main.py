@@ -65,7 +65,7 @@ def main(argv):
     indexer.writeIndexToFile('index')
 
     f = open(queriesFile, 'r')
-    queries = f.readlines()
+    queries = f.read().splitlines()
     f.close()
 
     scores = []

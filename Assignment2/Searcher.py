@@ -13,18 +13,17 @@ def searchDocuments(queriesTerms, indexFile):
             info = line.split(';')
             info.remove('\n')
             termInfo = info[0].split(':')
-            term_idf = termInfo[-1:]
+            term_idf = termInfo[-1:][0]
             term = ''.join(termInfo[:-1])  # necessary for terms with : in them (like websites)
             for doc in info[1:]:
                 docId, logWeight = doc.split(':')
                 docLens[docId] = 1 if docId not in docLens.keys() else docLens[docId] + 1
-                for termQuery in queriesTerms:
-                    if termQuery == term:
-                        documentsInfo[docId] = {} if docId not in documentsInfo.keys() \
-                            else {termQuery: (term_idf, logWeight)}
+                if term in queriesTerms:
+                    documentsInfo[docId] = {term: (term_idf, logWeight)}
 
             line = f.readline()
     f.close()
     avgDocLen = sum(docLens.values()) / len(docLens)
     documentsInfo = {docId: (docLens[docId], documentsInfo[docId]) for docId in documentsInfo.keys()}
+    print(documentsInfo)
     return documentsInfo, avgDocLen

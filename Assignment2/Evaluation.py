@@ -101,7 +101,6 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
     ndcgain = []
 
     for num, query in enumerate(queries):
-
         # High Scores List (top 10, top 20 or top 50)
         highScores = list(scores[num].keys())[:top]
 
@@ -154,7 +153,7 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
 
         # NORMALIZED DISCOUNTED CUMULATIVE GAIN
         rel = []  # graded relevance of the result
-        for doc in range(0, top):
+        for doc in range(top):
             if highScores[doc] in relevance_1[num]:
                 rel.append(1)
             elif highScores[doc] in relevance_2[num]:

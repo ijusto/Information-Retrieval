@@ -78,7 +78,7 @@ class BetterTokenizer(Tokenizer):
             if url_match:
                 if url_match[0].endswith(').') or url_match[0].endswith('),'):
                     url_match = [url_match[0][:-2]]  # ex: https://www.genomedetective.com/app/typingtool/cov).
-                elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')'):
+                elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')') or url_match[0].endswith('}'):
                     url_match = [url_match[0][:-1]]
                 self.terms += url_match
             elif email_match:

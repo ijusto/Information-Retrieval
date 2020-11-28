@@ -57,7 +57,7 @@ class BetterTokenizer(Tokenizer):
     def getTerms(self):
         # split by whitespace
         terms = re.split('[\s]', self.text)
-
+        print(self.text, terms)
         for term in terms:
             # maintain websites
             url_match = re.findall(

@@ -22,7 +22,7 @@ def main(argv):
     start = []
     end = []
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
+        opts, args = getopt.getopt(argv, "hf:t:q:r:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
                                                      "rankType="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
@@ -90,9 +90,10 @@ def main(argv):
             scores += [ranker.bm25(1.2, 0.75)]
 
         end.append(timer())
-    
+
     # Evaluation
     Evaluation.getResults('queries.relevance.txt', queries, scores, start, end)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

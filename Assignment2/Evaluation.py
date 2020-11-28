@@ -1,10 +1,11 @@
-# Query Operations
+# Evaluation.
 #  Transforms the query to improve retrieval.
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 
 import math
 import statistics
+
 
 def getResults(file, queries, scores, start, end):
     # Get queries information (query_id, cord_ui, relevance)
@@ -90,6 +91,7 @@ def getResults(file, queries, scores, start, end):
     # Print Query Throughput
     print('\nQuery Throughput: {:-6.2f} Queries'.format(1 / (sum(time) / 50)))
 
+
 def getCalculation(relevance_1, relevance_2, scores, queries, top):
     # Initialization
     precision = []
@@ -173,7 +175,5 @@ def getCalculation(relevance_1, relevance_2, scores, queries, top):
             ndcgain.append(dcg / idcg)
         else:
             ndcgain.append(0)
-    return precision, recall, f_measure, avg_precision, ndcgain
 
-    # PUT IN MAIN
-    # Evaluation.getResults("queries.relevance.txt", queries, scores, start, end)
+    return precision, recall, f_measure, avg_precision, ndcgain

@@ -34,7 +34,7 @@ def getResults(file, queries, scores, start, end):
 
     # Time calculation
     time = [end[i] - start[i] for i in range(len(start))]
-
+    
     # Metrics Calculation
     precision10, recall10, f_measure10, avg_precision10, ndcgain10 = getCalculation(relevance_1, relevance_2, scores,
                                                                                     queries, 10)  # Top 10

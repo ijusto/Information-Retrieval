@@ -6,10 +6,10 @@ import getopt
 import sys
 from os import path
 
-from Indexer import Indexer
-from QueryOperations import QueryOperations
-from Ranker import Ranker
-from Searcher import Searcher
+from Indexer import *
+import QueryOperations
+from Ranker import *
+import Searcher
 from timeit import default_timer as timer
 
 
@@ -21,18 +21,22 @@ def main(argv):
     start = []
     end = []
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:", ["collectionFile=", "tokenizerType=", "queriesFilePath=", "rankType="])
+        opts, args = getopt.getopt(argv, "hf:t:q:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
+                                                     "rankType="])
     except getopt.GetoptError:
-        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>')
+        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
+              '-r <rankType: 0 - TF-IDF, 1 - BM25>')
         sys.exit()
 
     if len(opts) != 4:
-        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>')
+        print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
+              '-r <rankType: 0 - TF-IDF, 1 - BM25>')
         sys.exit()
 
     for opt, arg in opts:
         if opt == '-h':
-            print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>')
+            print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
+                  '-r <rankType: 0 - TF-IDF, 1 - BM25>')
             sys.exit()
         elif opt in ("-f", "--collectionFile"):
             if not path.exists(arg):
@@ -65,31 +69,28 @@ def main(argv):
 
     for query in queries:
         start.append(timer())
-        # Query operations
-        queriesTerms = QueryOperations(tokenizerType, query).getQueriesTerms()
 
-        # Searcher
-        searcher = Searcher(queriesTerms)
-
-        #Ranker
-        ranker = Ranker(searcher.searchDocuments('index'))
+        # Ranker
+        ranker = Ranker(
+                    # Searcher
+                    Searcher.searchDocuments(
+                        # Query Operations
+                        QueryOperations.getQueriesTerms(tokenizerType, query),
+                    'index'))
+        
         end.append(timer())
-        
-        #FAZER PRINT 1.3
-        
-        
+
+        # FAZER PRINT 1.3
+
         # If rankType = 0 (tf-idf)
         if rankType == '0':
             _ = ranker.lnc_ltc()
-                
+
         # If rankType = 1 (BM25)
         else:
             # lenD is the length of the document D in words
             # avgdl is the average document length in the text collection from which documents are drawn
             _ = ranker.bm25(lenD, avgdl, 1.2, 0.75)
-
-            
-        
 
 
 if __name__ == "__main__":

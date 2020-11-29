@@ -4,9 +4,7 @@ Weighted (tf-idf) indexer and a ranked retrieval method.
 Usage
 ----------------------
     main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> -r <rankType: 0 - TF-IDF, 1 - BM25>
-
-Resulting index is written to "index" file in project folder
-
+    
 Example:
 
     python3 main.py -f ./data/metadata_2020-03-27.csv -t 1 -q ./data/queries.txt -r 0

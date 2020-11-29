@@ -73,19 +73,20 @@ def main(argv):
         tokenizer = Tokenizer.BetterTokenizer('')
 
     for query in queries:
-        # Start time (latency purpose)
-        start.append(timer())
 
         # Query Operations
         tokenizer.changeText(query)
         queryTerms = tokenizer.getTerms()
 
+        
         # Searcher
         documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index')
 
         # Ranker
         ranker = Ranker(documentsInfo, avgDocLen)
-
+        
+        # Start time (latency purpose)
+        start.append(timer())
         # If rankType = 0 (tf-idf)
         if rankType == '0':
             scores += [ranker.lnc_ltc()]

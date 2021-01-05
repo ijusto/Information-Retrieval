@@ -1,0 +1,2 @@
+PyStemmer==2.0.1
+psutil==5.7.3

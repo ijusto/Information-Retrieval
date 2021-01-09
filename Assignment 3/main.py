@@ -13,29 +13,30 @@ from timeit import default_timer as timer
 
 
 def main(argv):
+
+    # ----------------------------------------- HANDLING PROGRAM INPUT -------------------------------------------------
     collectionFile = ''
     tokenizerType = ''
     queriesFile = ''
     rankType = ''
-    start = []
-    end = []
+    storePos = ''
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:r:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
-                                                     "rankType="])
+        opts, args = getopt.getopt(argv, "hf:t:q:r:p", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
+                                                     "rankType=", "storePositions="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-              '-r <rankType: 0 - TF-IDF, 1 - BM25>')
+              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes')
         sys.exit()
 
-    if len(opts) != 4:
+    if len(opts) != 5:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-              '-r <rankType: 0 - TF-IDF, 1 - BM25>')
+              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes')
         sys.exit()
 
     for opt, arg in opts:
         if opt == '-h':
             print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-                  '-r <rankType: 0 - TF-IDF, 1 - BM25>')
+                  '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes')
             sys.exit()
         elif opt in ("-f", "--collectionFile"):
             if not path.exists(arg):
@@ -57,9 +58,28 @@ def main(argv):
                 print('Incorrect rank type. TF-IDF: 0, BM25: 1.')
                 sys.exit()
             rankType = arg
+        elif opt in ("-p", "--storePositions"):
+            if arg != '0' and arg != '1':
+                print('Incorrect store positions choice. No: 0, Yes: 1.')
+                sys.exit()
+            storePos = arg
 
-    # Indexer
-    (Indexer(collectionFile, tokenizerType)).writeIndexToFile('index')
+    # ----------------------------------------------- INDEXER ----------------------------------------------------------
+    indexer = Indexer(collectionFile, tokenizerType)
+
+    start = timeit.default_timer()
+    indexer.index(storePos)
+    stop = timeit.default_timer()
+
+    #   a) What was the total indexing time?
+    print('Indexing time - {} tokenizer: {} seconds'.format("simple" if tokenizerType == "0" else "better", stop - start))
+
+    # How much memory (roughly) is required to index this collection?
+    process = psutil.Process(os.getpid())
+    print('\nMemory required for indexing: {} MB'.format(process.memory_info().rss / 1000000))  # rss in bytes
+
+    #   b) What is your vocabulary size?
+    print('\nVocabulary Size: {}'.format(indexer.getVocabularySize()))
 
     f = open(queriesFile, 'r')
     queries = f.read().splitlines()
@@ -72,17 +92,19 @@ def main(argv):
     else:  # better
         tokenizer = Tokenizer.BetterTokenizer('')
 
+    start = []
+    end = []
     for query in queries:
 
-        # Query Operations
+        # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
         tokenizer.changeText(query)
-        queryTerms = tokenizer.getTerms()
+        queryTerms = tokenizer.getTerms(withPositions=storePos)
 
         
-        # Searcher
+        # ------------------------------------------- SEARCHER ---------------------------------------------------------
         documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index')
 
-        # Ranker
+        # -------------------------------------------- RANKER ----------------------------------------------------------
         ranker = Ranker(documentsInfo, avgDocLen)
         
         # Start time (latency purpose)

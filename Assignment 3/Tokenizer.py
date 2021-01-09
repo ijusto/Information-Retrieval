@@ -33,13 +33,27 @@ class SimpleTokenizer(Tokenizer):
 
     # Populates the terms list with the terms in the document.
     #  @param self The object pointer.
+    #  @param withPositions todo
     #  @returns the list of terms in this document.
-    def getTerms(self):
+    def getTerms(self, withPositions=False):
         # replaces all non-alphabetic characters by a space, lowercase tokens, splits on whitespace
         self.terms = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', self.text)
                               .lower())
+
         # ignores all tokens with less than 3 characters
         self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
+
+        if withPositions:
+            text = re.split('[\s]', self.text)
+            termsPositions = {}
+            for pos in range(len(text)):
+                if text[pos] in self.terms:
+                    if text[pos] not in termsPositions.keys():
+                        termsPositions[text[pos]] = [pos]
+                    else:
+                        termsPositions[text[pos]] += [pos]
+            self.terms = termsPositions
+
         return self.terms
 
 
@@ -56,12 +70,17 @@ class BetterTokenizer(Tokenizer):
 
     # Populates the terms list with the terms in the document.
     #  @param self The object pointer.
+    #  @param withPositions todo
     #  @returns the list of terms in this document.
-    def getTerms(self):
+    def getTerms(self, withPositions=False):
         # split by whitespace
         terms = re.split('[\s]', self.text)
 
+        if withPositions:
+            termsPositions = {}
+
         for term in terms:
+
             # maintain websites
             url_match = re.findall(
                 r'(https?://(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
@@ -107,6 +126,18 @@ class BetterTokenizer(Tokenizer):
         self.stopWordFilter()
         self.stem()
         self.terms = list(filter(lambda t: len(t) >= 3, self.terms))
+
+        if withPositions:
+            text = re.split('[\s]', self.text)
+            termsPositions = {}
+            for pos in range(len(text)):
+                if text[pos] in self.terms:
+                    if text[pos] not in termsPositions.keys():
+                        termsPositions[text[pos]] = [pos]
+                    else:
+                        termsPositions[text[pos]] += [pos]
+            self.terms = termsPositions
+
         return self.terms
 
     # Removes stopwords from the list of the terms of the document.

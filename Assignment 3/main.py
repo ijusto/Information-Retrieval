@@ -21,7 +21,7 @@ def main(argv):
     rankType = ''
     storePos = ''
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:r:p", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
+        opts, args = getopt.getopt(argv, "hf:t:q:r:p:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
                                                      "rankType=", "storePositions="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
@@ -60,15 +60,15 @@ def main(argv):
             rankType = arg
         elif opt in ("-p", "--storePositions"):
             if arg != '0' and arg != '1':
-                print('Incorrect store positions choice. No: 0, Yes: 1.')
+                print('\nIncorrect store positions choice. No: 0, Yes: 1.')
                 sys.exit()
             storePos = arg
 
     # ----------------------------------------------- INDEXER ----------------------------------------------------------
-    indexer = Indexer(collectionFile, tokenizerType)
+    indexer = Indexer(collectionFile, tokenizerType, True if storePos=='1' else False)
 
     start = timeit.default_timer()
-    indexer.index(storePos)
+    indexer.index()
     stop = timeit.default_timer()
 
     #   a) What was the total indexing time?
@@ -98,7 +98,7 @@ def main(argv):
 
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
         tokenizer.changeText(query)
-        queryTerms = tokenizer.getTerms(withPositions=storePos)
+        queryTerms = tokenizer.getTerms(withPositions=True if storePos=='1' else False)
 
         
         # ------------------------------------------- SEARCHER ---------------------------------------------------------

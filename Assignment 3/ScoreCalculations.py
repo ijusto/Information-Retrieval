@@ -7,14 +7,14 @@ import math
 #  @param postingsMaps map with the terms as keys and as value s map with doc ids as keys and term frequency as value
 #  @returns the term frequency TF(t,d) of term t in document d
 def getTFtd(t, dId, postingsMaps):
-    return 0 if t not in postingsMaps.keys() else postingsMaps[t][dId]
+    return 0 if t not in postingsMaps.keys() else postingsMaps[t][dId][0]
 
 # Returns the number of occurrences of the term t occurs in the collection, counting multiple occurrences
 #  @param t The term.
 #  @param postingsMaps map with the terms as keys and as value s map with doc ids as keys and term frequency as value
 #  @returns the collection frequency of term t
 def getCollectionFreq(t, postingsMaps):
-    return sum([postingsMaps[t][docId] for docId in postingsMaps[t].keys()])
+    return sum([postingsMaps[t][docId][0] for docId in postingsMaps[t].keys()])
 
 # Returns the number of documents that contain the term t
 #  @param self The object pointer.

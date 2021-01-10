@@ -13,6 +13,7 @@ class CorpusReader:
 
     def startReadingCorpus(self):
         self.csv_file = open(self.csvFName, "r")
+        self.csv_file.readline() # skip header
 
     def readDoc(self):
         line = self.csv_file.readline()
@@ -21,10 +22,11 @@ class CorpusReader:
             self.csv_file.close()
             return -1
 
-        line = line.split(',')
+        # https://stackoverflow.com/questions/18893390/splitting-on-comma-outside-quotes
+        line = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")   # any characters that are not a comma
         print(line)
         title = line[3]
-        abstract = line[8]
+        abstract = line[10]
         doi = line[0]
         if abstract is not None and abstract != '' and title is not None and title != '' and doi is not None and doi != '':
             return doi, title, abstract

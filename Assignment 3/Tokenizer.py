@@ -88,6 +88,7 @@ class BetterTokenizer(Tokenizer):
             termsPositions = []  # [[term0pos0, term0pos1,...], [term1pos0, term1pos1, term1pos2]
 
         for pos in range(len(terms)):
+            print(terms[pos])
 
             # in case there is more than one term in this split by whitespace list position
             tempTermList = []
@@ -109,45 +110,62 @@ class BetterTokenizer(Tokenizer):
             siglas_match = re.findall(r'\b(?:[A-Z]){2,}', terms[pos])
 
             if url_match:
+                print('url_match')
                 if url_match[0].endswith(').') or url_match[0].endswith('),'):
                     url_match = [url_match[0][:-2]]  # ex: https://www.genomedetective.com/app/typingtool/cov).
                 elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')') or \
                         url_match[0].endswith('}'):
                     url_match = [url_match[0][:-1]]
-                tempTermList = [url_match]
+                tempTermList = url_match
             elif email_match:
-                tempTermList = [email_match]
+                print('email_match')
+                tempTermList = email_match
             elif hyphen_match:
-                tempTermList = [hyphen_match]
+                print('hyphen_match')
+                print(hyphen_match)
+                tempTermList = hyphen_match
             elif apostrophe_match:
+                print('apostrophe_match')
                 if apostrophe_match[0].endswith('\''):
                     apostrophe_match = [apostrophe_match[0][:-1]]
-                tempTermList = [apostrophe_match]
+                tempTermList = apostrophe_match
             elif acronyms_match:
-                tempTermList = [acronyms_match]
+                print('acronyms_match')
+                tempTermList = acronyms_match
             elif siglas_match:
-                tempTermList = [siglas_match]
+                print('siglas_match')
+                tempTermList = siglas_match
             else:
+                print('else')
                 # remove html character entities, ex: &nbsp;
                 term = re.sub(r'(&.+;)', '', terms[pos])
 
                 # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
                 tempTermList = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
 
+            print(tempTermList)
             # Removes stopwords from the list of the terms of the document.
             tempTermList = list(filter(lambda term: term not in stopwords, tempTermList))
+            print("\ntempTermList: ")
+            print(tempTermList)
             # Stemmes
             tempTermList = [stemmer.stemWord(term) for term in tempTermList]
             # ignores all tokens with less than 3 characters
             tempTermList = list(filter(lambda t: len(t) >= 3, tempTermList))
 
-            if withPositions: # [[term0pos0, term0pos1,...], [term1pos0, term1pos1, term1pos2]
-                for term in tempTermList:
-                    if term in self.terms:
-                        termsPositions[self.terms.index(term)] += [pos]
-                    else:
-                        self.terms += [term]
-                        termsPositions += [pos]
+            while('' in tempTermList):
+                tempTermList.remove('')
+
+            if tempTermList != []:
+                if withPositions: # [[term0pos0, term0pos1,...], [term1pos0, term1pos1, term1pos2]
+                    for term in tempTermList:
+                        if term in self.terms:
+                            termsPositions[self.terms.index(term)] += [pos]
+                        else:
+                            self.terms += [term]
+                            termsPositions += [[pos]]
+                else:
+                    self.terms += [term for term in tempTermList if term not in self.terms]
 
         if withPositions:
             return self.terms, termsPositions

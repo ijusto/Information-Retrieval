@@ -6,6 +6,7 @@
 import CorpusReader
 import Tokenizer
 import timeit
+import sys
 import psutil
 import os
 from ScoreCalculations import *
@@ -44,6 +45,7 @@ class Indexer:
 
         memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + 10 # percentage of memory used by the current Python instance plus 10%
 
+        corpusReader.startReadingCorpus()
         while True:
             doc = corpusReader.readDoc()
             if doc == -1:
@@ -62,6 +64,9 @@ class Indexer:
 
             if self.withPositions:
                 termPositions = {terms[termInd]:termPositions[termInd] for termInd in range(len(terms))}
+                print(abstract)
+                print(termPositions)
+                sys.exit(-1)
 
                 for term in terms:
                     if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
@@ -116,6 +121,7 @@ class Indexer:
 
         indexFile = open(filename, 'w')
 
+        print(self.postingsMaps['pneumonia'])
         if self.withPositions:
             indexFile.writelines([term + ':' + str(idf) + '|' + ''.join([str(doc_id) + ':' + str(term_weight) + '|' + ','.join([str(pos) for pos in termPositions])
                                                                          for doc_id, (term_weight, termPositions) in pMap.items()]) + '\n'

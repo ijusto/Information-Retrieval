@@ -5,27 +5,28 @@
 #  @author Inês Justo, 84804
 #  @author Daniel Marques, 85070
 
-
-import csv
-
-
 class CorpusReader:
 
     def __init__(self, csvFName):
         self.csvFName = csvFName
+        self.csv_file = None
 
-    def readCorpus(self) -> list:
-        corpus = []
+    def startReadingCorpus(self):
+        self.csv_file = open(self.csvFName, "r")
 
-        with open(self.csvFName) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            rows = list(csv_reader)
-            # doi, title, abstract
-            for iRow in range(len(rows)):
-                title = rows[iRow][3]
-                abstract = rows[iRow][8]
-                doi = rows[iRow][0]
-                if abstract is not None and abstract != '' and title is not None and title != '' and doi is not None and doi != '':
-                    corpus += [(doi, title, abstract)]
+    def readDoc(self):
+        line = self.csv_file.readline()
 
-        return corpus
+        if not line:
+            self.csv_file.close()
+            return -1
+
+        line = line.split(',')
+        print(line)
+        title = line[3]
+        abstract = line[8]
+        doi = line[0]
+        if abstract is not None and abstract != '' and title is not None and title != '' and doi is not None and doi != '':
+            return doi, title, abstract
+
+        return None

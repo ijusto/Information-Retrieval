@@ -39,19 +39,19 @@ class Indexer:
         else:  # better
             tokenizer = Tokenizer.BetterTokenizer('')
 
-        # percentage of available memory system-wide
-        #psutil.virtual_memory().available * 100 / psutil.virtual_memory().total
+        corpusReader = CorpusReader.CorpusReader(self.collectionPath)
 
-        pid = os.getpid()
+        memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + 10 # percentage of memory used by the current Python instance plus 10%
 
-        # memory used by the current Python instance
-        #memoryUse = psutil.Process(os.getpid()).memory_info()[0] / 2. ** 30  # memory use in GB...I think
+        while True:
+            doc = corpusReader.readDoc()
+            if doc == -1:
+                break
+            elif doc == None:
+                continue
 
-        #print('memory use:', psutil.Process(os.getpid()).memory_info()[0] / 2. ** 30, ", available memory: ",
-        #      psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)
+            (doi, title, abstract) = doc
 
-        memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + 10
-        for doi, title, abstract in CorpusReader.CorpusReader(self.collectionPath).readCorpus():
             self.N += 1
             tokenizer.changeText(title + " " + abstract)
             terms = tokenizer.getTerms(withPositions=withPositions) # todo: check if terms is a dict or a list ...
@@ -60,9 +60,16 @@ class Indexer:
             nDicts = 0
             for term in terms:
                 if psutil.Process(os.getpid()).memory_percent()*100 >= memoryUsePercLimit:
+                    # lnc (logarithmic term frequency, no document frequency, cosine normalization)
+                    # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: idf, {docId: weight}}
+                    # logarithmic term frequency
+                    self.postingsMaps = {term: (getIDFt(term, self.postingsMaps, self.N),
+                                                {docId: getLogWeight(term, docId, self.postingsMaps)
+                                                 for docId in self.postingsMaps[term].keys()})
+                                         for term in self.postingsMaps.keys()}
                     self.writeIndexToFile('dict' + str(nDicts))
                     nDicts += 1
-                    # todo: clean postingsMaps
+                    self.postingsMaps = {} # clean dictionary
 
                 if term in self.postingsMaps.keys():
                     if doi in self.postingsMaps[term].keys():
@@ -71,21 +78,6 @@ class Indexer:
                         self.postingsMaps[term][doi] = 1
                 else:
                     self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
-
-        # lnc (logarithmic term frequency, no document frequency, cosine normalization)
-        # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: idf, {docId: weight}}
-        # logarithmic term frequency
-        self.postingsMaps = {term: (getIDFt(term, self.postingsMaps, self.N),
-                                    {docId: getLogWeight(term, docId, self.postingsMaps)
-                                    for docId in self.postingsMaps[term].keys()})
-                             for term in self.postingsMaps.keys()}
-
-        # order by term_idf and then by term_weight (both reversed)
-        # Postings of low-idf terms have many docs
-        #self.postingsMaps = dict(sorted({t: (idf, dict(sorted({doid: w for doid, w in pMap.items()}.items(),
-        #                                                      key=lambda items: items[1], reverse=True)))
-        #                                 for t, (idf, pMap) in self.postingsMaps.items()}.items(),
-        #                                key=lambda items: self.postingsMaps[items[0]][0], reverse=True))
 
     # 2. Write the resulting index to file using the following format (one term per line):
     #       term:id|doc_id:term_weight:pos1,pos2,pos3,...|doc_id:term_weight:pos1,pos2,pos3,...

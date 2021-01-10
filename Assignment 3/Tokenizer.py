@@ -43,6 +43,7 @@ class SimpleTokenizer(Tokenizer):
         # ignores all tokens with less than 3 characters
         self.terms = list(filter(lambda term: len(term) >= 3, self.terms))
 
+        # {term: [pos0, pos1,...]}
         if withPositions:
             text = re.split('[\s]', self.text)
             termsPositions = {}
@@ -76,26 +77,36 @@ class BetterTokenizer(Tokenizer):
         # split by whitespace
         terms = re.split('[\s]', self.text)
 
-        if withPositions:
-            termsPositions = {}
+        stemmer = Stemmer.Stemmer('english')
+        # get the english stopwords
+        stopwords = []
+        with open('snowball_stopwords_EN.txt', 'r') as document:
+            stopwords += list(filter(None, re.split("[ \n]", document.read())))
+        document.close()
 
-        for term in terms:
+        if withPositions:
+            termsPositions = []  # [[term0pos0, term0pos1,...], [term1pos0, term1pos1, term1pos2]
+
+        for pos in range(len(terms)):
+
+            # in case there is more than one term in this split by whitespace list position
+            tempTermList = []
 
             # maintain websites
             url_match = re.findall(
                 r'(https?://(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9'
                 r'][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?://(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|ww'
-                r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', term)
+                r'w\.[a-zA-Z0-9]+\.[^\s]{2,})', terms[pos])
             # maintain emails
-            email_match = re.findall(r'[\w.-]+@[\w.-]+', term)
+            email_match = re.findall(r'[\w.-]+@[\w.-]+', terms[pos])
             # maintain words with hyphens
-            hyphen_match = re.findall(r"([A-Za-z]+-[A-Za-z]+)", term)
+            hyphen_match = re.findall(r"([A-Za-z]+-[A-Za-z]+)", terms[pos])
             # maintain apostrophes
-            apostrophe_match = re.findall(r"([A-Za-z]+'[A-Za-z]*)", term)
+            apostrophe_match = re.findall(r"([A-Za-z]+'[A-Za-z]*)", terms[pos])
             # maintain acronyms
-            acronyms_match = re.findall(r'\b(?:[a-zA-Z]\.){2,}', term)
+            acronyms_match = re.findall(r'\b(?:[a-zA-Z]\.){2,}', terms[pos])
             # maintain siglas
-            siglas_match = re.findall(r'\b(?:[A-Z]){2,}', term)
+            siglas_match = re.findall(r'\b(?:[A-Z]){2,}', terms[pos])
 
             if url_match:
                 if url_match[0].endswith(').') or url_match[0].endswith('),'):
@@ -103,55 +114,42 @@ class BetterTokenizer(Tokenizer):
                 elif url_match[0].endswith(',') or url_match[0].endswith('.') or url_match[0].endswith(')') or \
                         url_match[0].endswith('}'):
                     url_match = [url_match[0][:-1]]
-                self.terms += url_match
+                tempTermList = [url_match]
             elif email_match:
-                self.terms += email_match
+                tempTermList = [email_match]
             elif hyphen_match:
-                self.terms += hyphen_match
+                tempTermList = [hyphen_match]
             elif apostrophe_match:
                 if apostrophe_match[0].endswith('\''):
                     apostrophe_match = [apostrophe_match[0][:-1]]
-                self.terms += apostrophe_match
+                tempTermList = [apostrophe_match]
             elif acronyms_match:
-                self.terms += acronyms_match
+                tempTermList = [acronyms_match]
             elif siglas_match:
-                self.terms += siglas_match
+                tempTermList = [siglas_match]
             else:
                 # remove html character entities, ex: &nbsp;
-                term = re.sub(r'(&.+;)', '', term)
+                term = re.sub(r'(&.+;)', '', terms[pos])
 
                 # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
-                self.terms += re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
+                tempTermList = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
 
-        self.stopWordFilter()
-        self.stem()
-        self.terms = list(filter(lambda t: len(t) >= 3, self.terms))
+            # Removes stopwords from the list of the terms of the document.
+            tempTermList = list(filter(lambda term: term not in stopwords, tempTermList))
+            # Stemmes
+            tempTermList = [stemmer.stemWord(term) for term in tempTermList]
+            # ignores all tokens with less than 3 characters
+            tempTermList = list(filter(lambda t: len(t) >= 3, tempTermList))
+
+            if withPositions: # [[term0pos0, term0pos1,...], [term1pos0, term1pos1, term1pos2]
+                for term in tempTermList:
+                    if term in self.terms:
+                        termsPositions[self.terms.index(term)] += [pos]
+                    else:
+                        self.terms += [term]
+                        termsPositions += [pos]
 
         if withPositions:
-            text = re.split('[\s]', self.text)
-            termsPositions = {}
-            for pos in range(len(text)):
-                if text[pos] in self.terms:
-                    if text[pos] not in termsPositions.keys():
-                        termsPositions[text[pos]] = [pos]
-                    else:
-                        termsPositions[text[pos]] += [pos]
-            self.terms = termsPositions
+            return self.terms, termsPositions
 
-        return self.terms
-
-    # Removes stopwords from the list of the terms of the document.
-    #  @param self The object pointer.
-    def stopWordFilter(self):
-        # get the english stopwords
-        stopwords = []
-        with open('snowball_stopwords_EN.txt', 'r') as document:
-            stopwords += list(filter(None, re.split("[ \n]", document.read())))
-        document.close()
-        self.terms = list(filter(lambda term: term not in stopwords, self.terms))
-
-    # Stemmes the the list of the terms of the document.
-    #  @param self The object pointer.
-    def stem(self):
-        stemmer = Stemmer.Stemmer('english')
-        self.terms = stemmer.stemWords(self.terms)
+        return self.terms, None

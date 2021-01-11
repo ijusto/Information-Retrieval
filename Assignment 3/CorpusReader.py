@@ -35,10 +35,10 @@ class CorpusReader:
         abstract = line[8]
         doi = line[0]
         if abstract is not None and abstract != '' and title is not None and title != '' and doi is not None and doi != '':
-            stop = timeit.default_timer()
-            print('readDoc: {} seconds'.format(stop - start))
+            #stop = timeit.default_timer()
+            #print('readDoc: {} seconds'.format(stop - start))
             return doi, title, abstract
 
-        stop = timeit.default_timer()
-        print('readDoc: {} seconds'.format(stop - start))
+        #stop = timeit.default_timer()
+        #print('readDoc: {} seconds'.format(stop - start))
         return None

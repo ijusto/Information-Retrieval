@@ -43,9 +43,13 @@ class Indexer:
 
         corpusReader = CorpusReader.CorpusReader(self.collectionPath)
 
-        memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + 10 # percentage of memory used by the current Python instance plus 10%
+        memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)/2 # percentage of memory used by the current Python instance plus 10%
+        print(psutil.Process(os.getpid()).memory_percent()*100)
+        print(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)
+        print(psutil.Process(os.getpid()).memory_percent()*100 + (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)/2)
 
         corpusReader.startReadingCorpus()
+        nDicts = 0
 
         if self.withPositions:
 
@@ -59,34 +63,39 @@ class Indexer:
                     continue
 
                 (doi, title, abstract) = doc
-
+                del doc
                 self.N += 1
 
 
                 # ------------------------------------------- Get Document Terms ---------------------------------------
                 tokenizer.changeText(title + " " + abstract)
                 terms, termPositions = tokenizer.getTerms(withPositions=self.withPositions)
+                tokenizer.changeText("")  # clean term memory from tokenizer
 
                 # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: [termpositions]} }
-                nDicts = 0
 
-                for termInd in range(len(terms)):
-                    #if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
-                    if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10: # available memory
+                while terms != [] and termPositions != []:
+                    if (psutil.Process(os.getpid()).memory_percent() * 100) >= memoryUsePercLimit:
+                    #if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10: # available memory
 
                         start = timeit.default_timer()
-                        self.writeIndexToFile('./dicts/dict' + str(nDicts))
+                        self.writeIndexToFileWithPositions('./dicts/dict' + str(nDicts))
                         stop = timeit.default_timer()
-                        print('write: {} seconds'.format( stop - start))
+                        print('write: {} seconds'.format(stop - start))
+                        print('memory used: {} %'.format(psutil.Process(os.getpid()).memory_percent() * 100))
 
                         nDicts += 1
                         self.postingsMaps = {}  # clean dictionary
 
-                    if terms[termInd] in self.postingsMaps.keys():
-                        if doi not in self.postingsMaps[terms[termInd]].keys():
-                            self.postingsMaps[terms[termInd]][doi] = termPositions[termInd]
+                    if terms[0] in self.postingsMaps.keys():
+                        if doi not in self.postingsMaps[terms[0]].keys():
+                            self.postingsMaps[terms[0]][doi] = termPositions[0]
+                            terms = terms[1:]
+                            termPositions = termPositions[1:]
                     else:
-                        self.postingsMaps[terms[termInd]] = {doi: termPositions[termInd]}  # key: docId, value: [pos1,pos2,pos3,...]
+                        self.postingsMaps[terms[0]] = {doi: termPositions[0]}  # key: docId, value: [pos1,pos2,pos3,...]
+                        terms = terms[1:]
+                        termPositions = termPositions[1:]
 
                 # todo: merge dictionaries
                 # todo: weights (term freq = len(postitions)
@@ -135,20 +144,30 @@ class Indexer:
 
     # 2. Write the resulting index to file using the following format (one term per line):
     #       term:id|doc_id:term_weight:pos1,pos2,pos3,...|doc_id:term_weight:pos1,pos2,pos3,...
+    def writeIndexToFileWithPositions(self, filename):
+        if os.path.isfile(filename):
+            os.remove(filename)
+
+        indexFile = open(filename, 'w')
+
+        # term:docid:pos0,pos1,pos2|docid
+        indexFile.writelines([term + ':' + ''.join([str(doc_id) + ':' + ','.join([str(pos) for pos in termPositions]) + '|'
+                                                                     for doc_id, termPositions in pMap.items()]) + '\n'
+                              for term, pMap in self.postingsMaps.items()])
+
+        indexFile.close()
+
+    # 2. Write the resulting index to file using the following format (one term per line):
+    #       term:id|doc_id:term_weight:pos1,pos2,pos3,...|doc_id:term_weight:pos1,pos2,pos3,...
     def writeIndexToFile(self, filename):
         if os.path.isfile(filename):
             os.remove(filename)
 
         indexFile = open(filename, 'w')
 
-        if self.withPositions:
-            indexFile.writelines([term + ':' + ''.join([str(doc_id) + ':' + ','.join([str(pos) for pos in termPositions])
-                                                                         for doc_id, termPositions in pMap.items()]) + '\n'
-                                  for term, pMap in self.postingsMaps.items()])
-        else:
-            indexFile.writelines([term + ':' + str(idf) + '|' + ''.join([str(doc_id) + ':' + str(term_weight) + '|'
-                                                                         for doc_id, term_weight in pMap.items()]) + '\n'
-                                  for term, (idf, pMap) in self.postingsMaps.items()])
+        indexFile.writelines([term + ':' + str(idf) + '|' + ''.join([str(doc_id) + ':' + str(term_weight) + '|'
+                                                                     for doc_id, term_weight in pMap.items()]) + '\n'
+                              for term, (idf, pMap) in self.postingsMaps.items()])
 
         indexFile.close()
 

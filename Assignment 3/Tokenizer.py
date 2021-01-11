@@ -79,7 +79,7 @@ class BetterTokenizer(Tokenizer):
     #  @param withPositions todo
     #  @returns the list of terms in this document.
     def getTerms(self, withPositions=False):
-        start = timeit.default_timer()
+        #start = timeit.default_timer()
 
         # split by whitespace
         terms = re.split('[\s]', self.text)
@@ -163,10 +163,10 @@ class BetterTokenizer(Tokenizer):
                     self.terms += [term for term in tempTermList if term not in self.terms]
 
         if withPositions:
-            stop = timeit.default_timer()
-            print('getTerms: {} seconds'.format(stop - start))
+            #stop = timeit.default_timer()
+            #print('getTerms: {} seconds'.format(stop - start))
             return self.terms, termsPositions
 
-        stop = timeit.default_timer()
-        print('getTerms: {} seconds'.format(stop - start))
+        #stop = timeit.default_timer()
+        #print('getTerms: {} seconds'.format(stop - start))
         return self.terms

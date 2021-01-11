@@ -106,12 +106,42 @@ class Indexer:
                 #print('document {}: {} seconds'.format(doi, enddocreadtime - startdocreadtime))
 
             # todo: merge dictionaries
-            if nDicts > 1:
-                for nDict in nDicts:
-                    # read first line of each file
-                    # 
+            self.postingsMaps = []
 
-            # todo: weights (term freq = len(postitions)
+            final_dict = open("index", "w")
+            if nDicts > 1:
+                temp_dicts = [open('./dicts/dict' + str(nDict), "r") for nDict in range(nDicts)]
+                line_temp_dict = {}
+                while temp_dicts != []:
+                    for dict_file in temp_dicts:
+                        # read first line of each file
+                        line = dict_file.readline()
+
+                        if not line:
+                            dict_file.close()
+                            temp_dicts.remove(dict_file)
+
+                        # save line to memory
+
+                        info = line.split('[:]+|[|]+') # 'term', 'docid', 'pos1,pos2,pos3', 'docid', 'pos1,pos2,pos3', ...
+                        term = info[0] # term
+                        docIds = info[1:][0::2] # [docid, docid, ...]
+                        termPositions = [positions.split(',') for positions in info[1:][1::2]] # [[pos1,pos2,pos3], [pos1,pos2,pos3], ...]
+
+                        if term in line_temp_dict.keys():
+                            #for docId in docIds:
+                                # if docId in line_temp_dict[term].keys(): -> doesnt happpen because we only write to file after reading the hole document
+                            line_temp_dict[term].update({docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))})
+                        else:
+                            line_temp_dict.update({term: {docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))}})
+
+                    # todo: if we know of terms that arent repeated ahead in at least one of the dictionaries, we need to
+                    #       calculate the weights (term freq = len(postitions)), write in the final dictionary and remove terms from memory
+
+            else:
+                temp_dict = open('./dicts/dict0', 'r')
+                # todo: read line from temp_dict, calculate weights and write to final_dict
+
 
         else:
             while True:
@@ -163,7 +193,8 @@ class Indexer:
 
         indexFile = open(filename, 'w')
 
-        #todo: order postingsMaps by terms
+        # sort postingsMaps by terms
+        self.postingsMaps = dict(sorted(self.postingsMaps.items()))
 
         # term:docid:pos0,pos1,pos2|docid
         indexFile.writelines([term + ':' + ''.join([str(doc_id) + ':' + ','.join([str(pos) for pos in termPositions]) + '|'

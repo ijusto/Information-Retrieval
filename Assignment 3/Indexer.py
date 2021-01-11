@@ -89,7 +89,7 @@ class Indexer:
                         self.postingsMaps[terms[termInd]] = {doi: termPositions[termInd]}  # key: docId, value: [pos1,pos2,pos3,...]
 
                 # todo: merge dictionaries
-                # todo: weights
+                # todo: weights (term freq = len(postitions)
 
         else:
             while True:

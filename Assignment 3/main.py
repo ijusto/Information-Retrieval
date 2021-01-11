@@ -98,11 +98,15 @@ def main(argv):
 
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
         tokenizer.changeText(query)
-        queryTerms = tokenizer.getTerms(withPositions=True if storePos=='1' else False)
 
-        
+        if storePos == '1':
+            queryTerms, queryTermsPositions = tokenizer.getTerms(withPositions=True)
+        else:
+            queryTerms = tokenizer.getTerms(withPositions=False)
+            queryTermsPositions = None
+
         # ------------------------------------------- SEARCHER ---------------------------------------------------------
-        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index')
+        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, queryTermsPositions, 'index')
 
         # -------------------------------------------- RANKER ----------------------------------------------------------
         ranker = Ranker(documentsInfo, avgDocLen)

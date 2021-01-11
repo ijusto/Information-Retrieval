@@ -85,7 +85,7 @@ class Indexer:
 
                 # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: [termpositions]} }
 
-                if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10:  # available memory
+                if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10 and self.postingsMaps != {}:  # available memory
                     #start = timeit.default_timer()
                     self.writeIndexToFileWithPositions('./dicts/dict' + str(nDicts))
                     #stop = timeit.default_timer()
@@ -120,9 +120,11 @@ class Indexer:
             # todo: merge dictionaries
             self.postingsMaps = {}
 
+            start = timeit.default_timer()
             final_dict = open("index", "w")
+            dict_names = ['./dicts/dict' + str(nDict) for nDict in range(nDicts)]
             if nDicts > 1:
-                temp_dicts = [open('./dicts/dict' + str(nDict), "r") for nDict in range(nDicts)]
+                temp_dicts = [open(dict_name, "r") for dict_name in dict_names]
                 while temp_dicts != []:
                     for dict_file in temp_dicts:
                         # ---------------------- Read first line of each file ------------------------------------------
@@ -130,6 +132,9 @@ class Indexer:
 
                         if not line:
                             dict_file.close()
+                            # delete dictionary block from disk
+                            os.remove(dict_names[temp_dicts.index(dict_file)])
+                            dict_names.remove(dict_names[temp_dicts.index(dict_file)])
                             temp_dicts.remove(dict_file)
                             continue
 
@@ -142,18 +147,36 @@ class Indexer:
                         if term in self.postingsMaps.keys():
                             #for docId in docIds:
                                 # if docId in line_temp_dict[term].keys(): -> doesnt happpen because we only write to file after reading the hole document
+                            # merge postings list (update in order if dict document)
                             self.postingsMaps[term].update({docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))})
                         else:
                             self.postingsMaps.update({term: {docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))}})
 
-                    # todo: if we know of terms that arent repeated ahead in at least one of the dictionaries, we need to
-                    #       calculate the weights (term freq = len(postitions)), write in the final dictionary and remove terms from memory
+                    # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
+                    # get first element of alphabetical sorted list of terms in memory
+                    minorTerm = sorted(self.postingsMaps.keys())[0]
+
+                    # write its information to the final dictionary\
+                    final_dict.writelines(
+                        [minorTerm + ':' +                                                                 # term:
+                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +                        # idf;
+                         ''.join([str(doc_id) + ':' +                                                      # doc_id:
+                                  str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) + ':' + # term_weight:
+                                  ','.join([str(pos) for pos in positions]) + ';'                          # pos1,pos2,...
+                                            for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
+
+                    # remove it from memory
+                    del self.postingsMaps[minorTerm]
+                    del minorTerm
+
 
             else:
                 temp_dict = open('./dicts/dict0', 'r')
                 # todo: read line from temp_dict, calculate weights and write to final_dict
 
 
+            stop = timeit.default_timer()
+            print('merge and write of final dictionary: {} seconds'.format(stop - start))
         else:
             while True:
                 doc = corpusReader.readDoc()

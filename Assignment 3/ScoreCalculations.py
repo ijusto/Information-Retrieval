@@ -53,6 +53,11 @@ def getLogWeight(t, dId, postingsMaps):
     tf = getTFtd(t, dId, postingsMaps)
     return 0 if tf == 0 else (1 + math.log10(tf))
 
+def getLogWeightPositions(t, dId, postingsMaps):
+    tf = 0 if t not in postingsMaps.keys() else len(postingsMaps[t][dId]) # len([pos1, pos2, ...] = term_freq
+    return 0 if tf == 0 else (1 + math.log10(tf))
+
+
 # Returns the tf-idf weight of a term in a document (W(t,d))
 #  @param self The object pointer.
 #  @param t The term.

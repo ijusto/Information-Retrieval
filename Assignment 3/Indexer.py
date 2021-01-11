@@ -56,6 +56,17 @@ class Indexer:
                 # -------------------------------------------- Get Document --------------------------------------------
                 doc = corpusReader.readDoc()
                 if doc == -1:
+                    if self.postingsMaps != {}:
+                        # start = timeit.default_timer()
+                        self.writeIndexToFileWithPositions('./dicts/dict' + str(nDicts))
+                        # stop = timeit.default_timer()
+                        # print('write: {} seconds'.format(stop - start))
+                        # print('memory used: {} %'.format(psutil.Process(os.getpid()).memory_percent() * 100))
+                        print('available memory: {} %'.format(
+                            psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
+
+                        nDicts += 1
+                        self.postingsMaps = {}  # clean dictionary
                     break
                 elif doc == None:
                     continue
@@ -63,23 +74,24 @@ class Indexer:
                 (doi, title, abstract) = doc
                 del doc
                 self.N += 1
-                startdocreadtime = timeit.default_timer()
+                #startdocreadtime = timeit.default_timer()
 
                 # ------------------------------------------- Get Document Terms ---------------------------------------
                 tokenizer.changeText(title + " " + abstract)
+                del title
+                del abstract
                 terms, termPositions = tokenizer.getTerms(withPositions=self.withPositions)
                 tokenizer.changeText("")  # clean term memory from tokenizer
 
                 # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: [termpositions]} }
 
                 if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10:  # available memory
-                    start = timeit.default_timer()
+                    #start = timeit.default_timer()
                     self.writeIndexToFileWithPositions('./dicts/dict' + str(nDicts))
-                    stop = timeit.default_timer()
+                    #stop = timeit.default_timer()
                     #print('write: {} seconds'.format(stop - start))
                     #print('memory used: {} %'.format(psutil.Process(os.getpid()).memory_percent() * 100))
-                    print('available memory: {} %'.format(
-                        psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
+                    print('available memory: {} %'.format(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
 
                     nDicts += 1
                     self.postingsMaps = {}  # clean dictionary
@@ -102,38 +114,37 @@ class Indexer:
                     del terms
                     del termPositions
 
-                enddocreadtime = timeit.default_timer()
+                #enddocreadtime = timeit.default_timer()
                 #print('document {}: {} seconds'.format(doi, enddocreadtime - startdocreadtime))
 
             # todo: merge dictionaries
-            self.postingsMaps = []
+            self.postingsMaps = {}
 
             final_dict = open("index", "w")
             if nDicts > 1:
                 temp_dicts = [open('./dicts/dict' + str(nDict), "r") for nDict in range(nDicts)]
-                line_temp_dict = {}
                 while temp_dicts != []:
                     for dict_file in temp_dicts:
-                        # read first line of each file
+                        # ---------------------- Read first line of each file ------------------------------------------
                         line = dict_file.readline()
 
                         if not line:
                             dict_file.close()
                             temp_dicts.remove(dict_file)
+                            continue
 
-                        # save line to memory
-
+                        # ------------------------ Save line info to memory --------------------------------------------
                         info = line.split('[:]+|[|]+') # 'term', 'docid', 'pos1,pos2,pos3', 'docid', 'pos1,pos2,pos3', ...
                         term = info[0] # term
                         docIds = info[1:][0::2] # [docid, docid, ...]
                         termPositions = [positions.split(',') for positions in info[1:][1::2]] # [[pos1,pos2,pos3], [pos1,pos2,pos3], ...]
 
-                        if term in line_temp_dict.keys():
+                        if term in self.postingsMaps.keys():
                             #for docId in docIds:
                                 # if docId in line_temp_dict[term].keys(): -> doesnt happpen because we only write to file after reading the hole document
-                            line_temp_dict[term].update({docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))})
+                            self.postingsMaps[term].update({docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))})
                         else:
-                            line_temp_dict.update({term: {docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))}})
+                            self.postingsMaps.update({term: {docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))}})
 
                     # todo: if we know of terms that arent repeated ahead in at least one of the dictionaries, we need to
                     #       calculate the weights (term freq = len(postitions)), write in the final dictionary and remove terms from memory

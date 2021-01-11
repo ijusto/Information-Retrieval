@@ -44,9 +44,7 @@ class Indexer:
         corpusReader = CorpusReader.CorpusReader(self.collectionPath)
 
         memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)/2 # percentage of memory used by the current Python instance plus 10%
-        print(psutil.Process(os.getpid()).memory_percent()*100)
-        print(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)
-        print(psutil.Process(os.getpid()).memory_percent()*100 + (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)/2)
+        print('start memory available: {}%'.format(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
 
         corpusReader.startReadingCorpus()
         nDicts = 0
@@ -105,9 +103,14 @@ class Indexer:
                     del termPositions
 
                 enddocreadtime = timeit.default_timer()
-                print('document {}: {} seconds'.format(doi, enddocreadtime - startdocreadtime))
+                #print('document {}: {} seconds'.format(doi, enddocreadtime - startdocreadtime))
 
             # todo: merge dictionaries
+            if nDicts > 1:
+                for nDict in nDicts:
+                    # read first line of each file
+                    # 
+
             # todo: weights (term freq = len(postitions)
 
         else:
@@ -159,6 +162,8 @@ class Indexer:
             os.remove(filename)
 
         indexFile = open(filename, 'w')
+
+        #todo: order postingsMaps by terms
 
         # term:docid:pos0,pos1,pos2|docid
         indexFile.writelines([term + ':' + ''.join([str(doc_id) + ':' + ','.join([str(pos) for pos in termPositions]) + '|'

@@ -72,7 +72,7 @@ def main(argv):
     stop = timeit.default_timer()
 
     #   a) What was the total indexing time?
-    print('Indexing time - {} tokenizer: {} seconds'.format("simple" if tokenizerType == "0" else "better", stop - start))
+    print('Indexing time - {} tokenizer: {} min and {} seconds'.format("simple" if tokenizerType == "0" else "better", (stop - start)//60, (stop - start) % 60))
 
     # How much memory (roughly) is required to index this collection?
     process = psutil.Process(os.getpid())

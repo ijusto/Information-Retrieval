@@ -65,7 +65,7 @@ class Indexer:
                 (doi, title, abstract) = doc
                 del doc
                 self.N += 1
-
+                startdocreadtime = timeit.default_timer()
 
                 # ------------------------------------------- Get Document Terms ---------------------------------------
                 tokenizer.changeText(title + " " + abstract)
@@ -74,31 +74,41 @@ class Indexer:
 
                 # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: [termpositions]} }
 
-                while terms != [] and termPositions != []:
-                    if (psutil.Process(os.getpid()).memory_percent() * 100) >= memoryUsePercLimit:
-                    #if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10: # available memory
+                if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10:  # available memory
+                    start = timeit.default_timer()
+                    self.writeIndexToFileWithPositions('./dicts/dict' + str(nDicts))
+                    stop = timeit.default_timer()
+                    #print('write: {} seconds'.format(stop - start))
+                    #print('memory used: {} %'.format(psutil.Process(os.getpid()).memory_percent() * 100))
+                    print('available memory: {} %'.format(
+                        psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
 
-                        start = timeit.default_timer()
-                        self.writeIndexToFileWithPositions('./dicts/dict' + str(nDicts))
-                        stop = timeit.default_timer()
-                        print('write: {} seconds'.format(stop - start))
-                        print('memory used: {} %'.format(psutil.Process(os.getpid()).memory_percent() * 100))
+                    nDicts += 1
+                    self.postingsMaps = {}  # clean dictionary
+                else:
+                    #while terms != [] and termPositions != []:
+                    #    if terms[0] in self.postingsMaps.keys():
+                    #        #if doi not in self.postingsMaps[terms[0]].keys(): -> doi always not in self.postingsMaps[terms[0]].keys()
+                    #        self.postingsMaps[terms[0]][doi] = termPositions[0]
+                    #    else:
+                    #        self.postingsMaps[terms[0]] = {doi: termPositions[0]}  # key: docId, value: [pos1,pos2,pos3,...]
+                    #
+                    #    terms = terms[1:]
+                    #    termPositions = termPositions[1:]
 
-                        nDicts += 1
-                        self.postingsMaps = {}  # clean dictionary
+                    _ = [self.postingsMaps.update({terms[termInd]: {doi: termPositions[termInd]}})
+                                if terms[termInd] not in self.postingsMaps.keys()
+                                else self.postingsMaps[terms[termInd]].update({doi: termPositions[termInd]})
+                            for termInd in range(len(terms))]
 
-                    if terms[0] in self.postingsMaps.keys():
-                        if doi not in self.postingsMaps[terms[0]].keys():
-                            self.postingsMaps[terms[0]][doi] = termPositions[0]
-                            terms = terms[1:]
-                            termPositions = termPositions[1:]
-                    else:
-                        self.postingsMaps[terms[0]] = {doi: termPositions[0]}  # key: docId, value: [pos1,pos2,pos3,...]
-                        terms = terms[1:]
-                        termPositions = termPositions[1:]
+                    del terms
+                    del termPositions
 
-                # todo: merge dictionaries
-                # todo: weights (term freq = len(postitions)
+                enddocreadtime = timeit.default_timer()
+                print('document {}: {} seconds'.format(doi, enddocreadtime - startdocreadtime))
+
+            # todo: merge dictionaries
+            # todo: weights (term freq = len(postitions)
 
         else:
             while True:
@@ -119,7 +129,7 @@ class Indexer:
 
                 for term in terms:
                     #if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
-                    if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10: # available memory
+                    if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 20: # available memory
                         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
                         # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: idf, {docId: weight}}
                         # logarithmic term frequency

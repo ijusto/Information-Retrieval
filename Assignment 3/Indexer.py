@@ -46,53 +46,71 @@ class Indexer:
         memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + 10 # percentage of memory used by the current Python instance plus 10%
 
         corpusReader.startReadingCorpus()
-        while True:
-            doc = corpusReader.readDoc()
-            if doc == -1:
-                break
-            elif doc == None:
-                continue
 
-            (doi, title, abstract) = doc
+        if self.withPositions:
 
-            self.N += 1
-            tokenizer.changeText(title + " " + abstract)
-            terms, termPositions = tokenizer.getTerms(withPositions=self.withPositions)
+            while True:
 
-            # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: term_freq} }
-            nDicts = 0
+                # -------------------------------------------- Get Document --------------------------------------------
+                doc = corpusReader.readDoc()
+                if doc == -1:
+                    break
+                elif doc == None:
+                    continue
 
-            if self.withPositions:
-                termPositions = {terms[termInd]:termPositions[termInd] for termInd in range(len(terms))}
-                print(abstract)
-                print(termPositions)
-                sys.exit(-1)
+                (doi, title, abstract) = doc
 
-                for term in terms:
-                    if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
-                        # lnc (logarithmic term frequency, no document frequency, cosine normalization)
-                        # then, we modify the postingsMaps from {term: {docId: term_freq, [pos1,pos2,pos3,...]}} to {term: idf, {docId: weight, [pos1,pos2,pos3,...]}}
-                        # logarithmic term frequency
-                        self.postingsMaps = {term: (getIDFt(term, self.postingsMaps, self.N),
-                                                    {docId: getLogWeight(term, docId, self.postingsMaps)
-                                                     for docId in self.postingsMaps[term].keys()})
-                                             for term in self.postingsMaps.keys()}
-                        self.writeIndexToFile('dict' + str(nDicts))
+                self.N += 1
+
+
+                # ------------------------------------------- Get Document Terms ---------------------------------------
+                tokenizer.changeText(title + " " + abstract)
+                terms, termPositions = tokenizer.getTerms(withPositions=self.withPositions)
+
+                # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: [termpositions]} }
+                nDicts = 0
+
+                for termInd in range(len(terms)):
+                    #if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
+                    if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10: # available memory
+
+                        start = timeit.default_timer()
+                        self.writeIndexToFile('./dicts/dict' + str(nDicts))
+                        stop = timeit.default_timer()
+                        print('write: {} seconds'.format( stop - start))
+
                         nDicts += 1
                         self.postingsMaps = {}  # clean dictionary
 
-                    if term in self.postingsMaps.keys():
-                        if doi in self.postingsMaps[term].keys():
-                            self.postingsMaps[term][doi][0] += 1
-                        else:
-                            self.postingsMaps[term][doi] = (1, termPositions[term])
+                    if terms[termInd] in self.postingsMaps.keys():
+                        if doi not in self.postingsMaps[terms[termInd]].keys():
+                            self.postingsMaps[terms[termInd]][doi] = termPositions[termInd]
                     else:
-                        self.postingsMaps[term] = {doi: (1, termPositions[term])}  # key: docId, value: term_freq, [pos1,pos2,pos3,...]
+                        self.postingsMaps[terms[termInd]] = {doi: termPositions[termInd]}  # key: docId, value: [pos1,pos2,pos3,...]
 
-            else:
+                # todo: merge dictionaries
+                # todo: weights
+
+        else:
+            while True:
+                doc = corpusReader.readDoc()
+                if doc == -1:
+                    break
+                elif doc == None:
+                    continue
+
+                (doi, title, abstract) = doc
+
+                self.N += 1
+                tokenizer.changeText(title + " " + abstract)
+                terms = tokenizer.getTerms(withPositions=self.withPositions)
+
+                # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: term_freq} }
+                nDicts = 0
 
                 for term in terms:
-                    if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
+                    #if psutil.Process(os.getpid()).memory_percent() * 100 >= memoryUsePercLimit:
+                    if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10: # available memory
                         # lnc (logarithmic term frequency, no document frequency, cosine normalization)
                         # then, we modify the postingsMaps from {term: {docId: term_freq}} to {term: idf, {docId: weight}}
                         # logarithmic term frequency
@@ -100,7 +118,7 @@ class Indexer:
                                                     {docId: getLogWeight(term, docId, self.postingsMaps)
                                                      for docId in self.postingsMaps[term].keys()})
                                              for term in self.postingsMaps.keys()}
-                        self.writeIndexToFile('dict' + str(nDicts))
+                        self.writeIndexToFile('./dicts/dict' + str(nDicts))
                         nDicts += 1
                         self.postingsMaps = {}  # clean dictionary
 
@@ -112,6 +130,8 @@ class Indexer:
                     else:
                         self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
 
+                # todo: merge dictionaries
+
 
     # 2. Write the resulting index to file using the following format (one term per line):
     #       term:id|doc_id:term_weight:pos1,pos2,pos3,...|doc_id:term_weight:pos1,pos2,pos3,...
@@ -121,11 +141,10 @@ class Indexer:
 
         indexFile = open(filename, 'w')
 
-        print(self.postingsMaps['pneumonia'])
         if self.withPositions:
-            indexFile.writelines([term + ':' + str(idf) + '|' + ''.join([str(doc_id) + ':' + str(term_weight) + '|' + ','.join([str(pos) for pos in termPositions])
-                                                                         for doc_id, (term_weight, termPositions) in pMap.items()]) + '\n'
-                                  for term, (idf, pMap) in self.postingsMaps.items()])
+            indexFile.writelines([term + ':' + ''.join([str(doc_id) + ':' + ','.join([str(pos) for pos in termPositions])
+                                                                         for doc_id, termPositions in pMap.items()]) + '\n'
+                                  for term, pMap in self.postingsMaps.items()])
         else:
             indexFile.writelines([term + ':' + str(idf) + '|' + ''.join([str(doc_id) + ':' + str(term_weight) + '|'
                                                                          for doc_id, term_weight in pMap.items()]) + '\n'

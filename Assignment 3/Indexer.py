@@ -167,13 +167,57 @@ class Indexer:
 
                     # remove it from memory
                     del self.postingsMaps[minorTerm]
-                    del minorTerm
 
+                del info
+                del term
+                del docIds
+                del termPositions
+                del minorTerm
 
             else:
                 temp_dict = open('./dicts/dict0', 'r')
                 # todo: read line from temp_dict, calculate weights and write to final_dict
 
+                while True:
+
+                    # ------------------------------------- Read line of file ------------------------------------------
+                    line = temp_dict.readline()
+
+                    if not line:
+                        temp_dict.close()
+                        # delete dictionary block from disk
+                        os.remove('./dicts/dict0')
+                        break
+
+                    # ------------------------ Save line info to memory --------------------------------------------
+                    info = line.split('[:]+|[|]+')  # 'term', 'docid', 'pos1,pos2,pos3', 'docid', 'pos1,pos2,pos3', ...
+                    term = info[0]  # term
+                    docIds = info[1:][0::2]  # [docid, docid, ...]
+                    termPositions = [positions.split(',') for positions in
+                                     info[1:][1::2]]  # [[pos1,pos2,pos3], [pos1,pos2,pos3], ...]
+                    self.postingsMaps = {}
+                    self.postingsMaps[term] = {docIds[docInd]: termPositions[docInd] for docInd in range(len(docIds))}
+
+                    # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
+
+                    # write its information to the final dictionary\
+                    final_dict.writelines(
+                        [term + ':' +                                                                   # term:
+                         str(getIDFt(term, self.postingsMaps, self.N)) + ';' +                          # idf;
+                         ''.join([str(doc_id) + ':' +                                                   # doc_id:
+                                  str(getLogWeightPositions(term, doc_id, self.postingsMaps)) + ':' +   # term_weight:
+                                  ','.join([str(pos) for pos in positions]) + ';'                       # pos1,pos2,...
+                                  for doc_id, positions in self.postingsMaps[term].items()]) + '\n'])
+
+                    # remove it from memory
+                    self.postingsMaps = {}
+
+                del info
+                del term
+                del docIds
+                del termPositions
+
+            final_dict.close()
 
             stop = timeit.default_timer()
             print('merge and write of final dictionary: {} seconds'.format(stop - start))

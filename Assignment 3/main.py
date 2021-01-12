@@ -115,10 +115,18 @@ def main(argv):
         start.append(timer())
         # If rankType = 0 (tf-idf)
         if rankType == '0':
-            scores += [ranker.lnc_ltc()]
+            # If proximity = 1 (Proximity Boost)
+            if proximity == '1':
+                scores += [ranker.proximity_boost(ranker.lnc_ltc(), queryTerms)]
+            else:
+                scores += [ranker.lnc_ltc()]
         # If rankType = 1 (BM25)
         else:
-            scores += [ranker.bm25(1.2, 0.75)]
+            # If proximity = 1 (Proximity Boost)
+            if proximity == '1':
+                scores += [ranker.proximity_boost(ranker.bm25(1.2, 0.75), queryTerms)]
+            else:
+                scores += [ranker.bm25(1.2, 0.75)]
 
         # End time (latency purpose)
         end.append(timer())

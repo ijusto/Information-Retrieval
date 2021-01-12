@@ -4,7 +4,10 @@
 #  @author Daniel Marques, 85070
 
 
-def searchDocuments(queriesTerms, indexFile):
+def searchDocuments(queriesTerms, queriesTermsPositions, indexFile):
+
+    # todo: if queriesTermsPositions == None and queriesTerms != [] -> sem posiçoes else: -> com posiçoes
+
     documentsInfo = {}  # {docId: lenD, {term: (term_idf, logWeight)}}
     docLens = {}  # {docId: len}
     with open(indexFile, 'r') as f:

@@ -72,7 +72,7 @@ def main(argv):
     stop = timeit.default_timer()
 
     #   a) What was the total indexing time?
-    print('Indexing time - {} tokenizer: {} seconds'.format("simple" if tokenizerType == "0" else "better", stop - start))
+    print('Indexing time - {} tokenizer: {} min and {} seconds'.format("simple" if tokenizerType == "0" else "better", (stop - start)//60, (stop - start) % 60))
 
     # How much memory (roughly) is required to index this collection?
     process = psutil.Process(os.getpid())
@@ -98,11 +98,15 @@ def main(argv):
 
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
         tokenizer.changeText(query)
-        queryTerms = tokenizer.getTerms(withPositions=True if storePos=='1' else False)
 
-        
+        if storePos == '1':
+            queryTerms, queryTermsPositions = tokenizer.getTerms(withPositions=True)
+        else:
+            queryTerms = tokenizer.getTerms(withPositions=False)
+            queryTermsPositions = None
+
         # ------------------------------------------- SEARCHER ---------------------------------------------------------
-        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index')
+        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, queryTermsPositions, 'index')
 
         # -------------------------------------------- RANKER ----------------------------------------------------------
         ranker = Ranker(documentsInfo, avgDocLen)

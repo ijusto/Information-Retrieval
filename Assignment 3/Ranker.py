@@ -19,8 +19,8 @@ class Ranker:
         total_score = 0.0
         pos_list1 = []
         pos_list2 = []
-        pos_list1 = documentsInfo[term1][docId]
-        pos_list2 = documentsInfo[term2][docId]
+        pos_list1 = documentsInfo[docId][2][term1][3]
+        pos_list2 = documentsInfo[docId][2][term2][3]
         
         for pos in pos_list1:
             termscore = 0.0

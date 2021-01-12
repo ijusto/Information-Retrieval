@@ -57,6 +57,8 @@ class Indexer:
 
                 # -------------------------------------------- Get Document --------------------------------------------
                 doc = corpusReader.readDoc()
+
+                # last document
                 if doc == -1:
                     if self.postingsMaps != {}:
                         # start = timeit.default_timer()
@@ -119,20 +121,22 @@ class Indexer:
                 #enddocreadtime = timeit.default_timer()
                 #print('document {}: {} seconds'.format(doi, enddocreadtime - startdocreadtime))
 
-            self.postingsMaps = {}
 
+            # ---------------------------------------- ENDED INDEXING BLOCKS -------------------------------------------
             start = timeit.default_timer()
             final_dict = open("index", "w")
             dict_names = ['./dicts/dict' + str(nDict) for nDict in range(nDicts)]
 
             # -------------------------------------------- MERGE INDEX BLOCKS ------------------------------------------
             temp_dicts = [open(dict_name, "r") for dict_name in dict_names]
+            ntermsToDisk = 0
             while temp_dicts != []:
                 for dict_file in temp_dicts:
                     # ---------------------- Read first line of each file ------------------------------------------
                     line = dict_file.readline()
 
                     if not line:
+                        print('file: {}, temp_dicts: {}'.format(dict_file, temp_dicts))
                         dict_file.close()
                         # delete dictionary block from disk
                         os.remove(dict_names[temp_dicts.index(dict_file)])
@@ -154,23 +158,28 @@ class Indexer:
                     else:
                         self.postingsMaps.update({term: {docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))}})
 
-                # ------------------------- CALCULATE WEIGHTS AND WRITE ON FINAL INDEX -----------------------------
-                # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
-                # get first element of alphabetical sorted list of terms in memory
-                minorTerm = sorted(self.postingsMaps.keys())[0]
+                if self.postingsMaps != {}:
+                    # ------------------------- CALCULATE WEIGHTS AND WRITE ON FINAL INDEX -----------------------------
+                    # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
+                    # get first element of alphabetical sorted list of terms in memory
+                    minorTerm = sorted(self.postingsMaps.keys())[0]
 
-                # write its information to the final dictionary\
-                final_dict.writelines(
-                    [minorTerm + ':' +                                                                 # term:
-                     str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +                        # idf;
-                     ''.join([str(doc_id) + ':' +                                                      # doc_id:
-                              str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) + ':' + # term_weight:
-                              ','.join([str(pos) for pos in positions]) + ';'                          # pos1,pos2,...
-                                        for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
+                    # write its information to the final dictionary\
+                    final_dict.writelines(
+                        [minorTerm + ':' +                                                                 # term:
+                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +                        # idf;
+                         ''.join([str(doc_id) + ':' +                                                      # doc_id:
+                                  str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) + ':' + # term_weight:
+                                  ','.join([str(pos) for pos in positions]) + ';'                          # pos1,pos2,...
+                                            for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
 
-                # remove it from memory
-                del self.postingsMaps[minorTerm]
+                    ntermsToDisk += 1
+                    print('merging dictionary fase: writed into disk {} terms'.format(ntermsToDisk))
 
+                    # remove it from memory
+                    del self.postingsMaps[minorTerm]
+
+            # ---------------------------------------- ENDED MERGING INDEX BLOCKS --------------------------------------
             del info
             del term
             del docIds
@@ -189,16 +198,33 @@ class Indexer:
             # ---------------------------------------------- INDEX BLOCKS ----------------------------------------------
             while True:
                 doc = corpusReader.readDoc()
+                # last document
                 if doc == -1:
+                    if self.postingsMaps != {}:
+                        # start = timeit.default_timer()
+                        self.writeIndexToBlockFile('./dicts/dict' + str(nDicts))
+                        # stop = timeit.default_timer()
+                        # print('write: {} seconds'.format(stop - start))
+                        # print('memory used: {} %'.format(psutil.Process(os.getpid()).memory_percent() * 100))
+                        print('available memory: {} %'.format(
+                            psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
+
+                        nDicts += 1
+                        self.postingsMaps = {}  # clean dictionary
                     break
                 elif doc == None:
                     continue
 
                 (doi, title, abstract) = doc
-
+                del doc
                 self.N += 1
+
+                # ------------------------------------------- Get Document Terms ---------------------------------------
                 tokenizer.changeText(title + " " + abstract)
+                del title
+                del abstract
                 terms = tokenizer.getTerms(withPositions=False)
+                tokenizer.changeText("")  # clean term memory from tokenizer
 
                 # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: term_freq} }
                 nDicts = 0
@@ -220,10 +246,7 @@ class Indexer:
                     else:
                         self.postingsMaps[term] = {doi: 1}  # key: docId, value: term_freq
 
-                # todo: merge dictionaries
-
-            self.postingsMaps = {}
-
+            # ---------------------------------------- ENDED INDEXING BLOCKS -------------------------------------------
             start = timeit.default_timer()
             final_dict = open("index", "w")
             dict_names = ['./dicts/dict' + str(nDict) for nDict in range(nDicts)]
@@ -256,22 +279,25 @@ class Indexer:
                         self.postingsMaps.update(
                             {term: {docIds[docInd]: termFreqs[docInd] for docInd in range(len(docIds))}})
 
-                # ------------------------- CALCULATE WEIGHTS AND WRITE ON FINAL INDEX -----------------------------
-                # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
-                # get first element of alphabetical sorted list of terms in memory
-                minorTerm = sorted(self.postingsMaps.keys())[0]
+                if self.postingsMaps != {}:
 
-                # write its information to the final dictionary
-                final_dict.writelines(
-                    [minorTerm + ':' +                                                       # term:
-                     str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +              # idf;
-                     ''.join([str(doc_id) + ':' +                                            # doc_id:
-                              str(getLogWeight(minorTerm, doc_id, self.postingsMaps)) + ';'  # term_weight;
-                              for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
+                    # ------------------------- CALCULATE WEIGHTS AND WRITE ON FINAL INDEX -----------------------------
+                    # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
+                    # get first element of alphabetical sorted list of terms in memory
+                    minorTerm = sorted(self.postingsMaps.keys())[0]
 
-                # remove it from memory
-                del self.postingsMaps[minorTerm]
+                    # write its information to the final dictionary
+                    final_dict.writelines(
+                        [minorTerm + ':' +                                                       # term:
+                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +              # idf;
+                         ''.join([str(doc_id) + ':' +                                            # doc_id:
+                                  str(getLogWeight(minorTerm, doc_id, self.postingsMaps)) + ';'  # term_weight;
+                                  for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
 
+                    # remove it from memory
+                    del self.postingsMaps[minorTerm]
+
+            # ---------------------------------------- ENDED MERGING INDEX BLOCKS --------------------------------------
             del info
             del term
             del docIds

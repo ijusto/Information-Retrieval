@@ -138,11 +138,14 @@ class BetterTokenizer(Tokenizer):
                 # remove html character entities, ex: &nbsp;
                 term = re.sub(r'(&.+;)', '', terms[pos])
 
-                # replaces all non-alphabetic characters by a space, lowercases term, splits on whitespace
-                tempTermList = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term).lower())
+                # replaces all non-alphabetic characters by a space, splits on whitespace
+                tempTermList = re.split('[\s]', re.sub(r'[^A-Za-z]', ' ', term))
 
             while ('' in tempTermList):
                 tempTermList.remove('')
+
+            # lowercases all letters
+            tempTermList = [term.lower() for term in tempTermList]
 
             # Removes stopwords from the list of the terms of the document.
             tempTermList = list(filter(lambda term: term not in stopwords, tempTermList))

@@ -155,7 +155,7 @@ class Indexer:
                     print('docIds: {}'.format(docIds))
                     termPositions = [positions.split(',') for positions in info[1:][1::2]] # [[pos1,pos2,pos3], [pos1,pos2,pos3], ...]
                     print('termPositions: {}'.format(termPositions))
-                    print('postingsMaps: {}'.format(list(self.postingsMaps.items())))
+                    #print('postingsMaps: {}'.format(list(self.postingsMaps.items())))
                     if term in self.postingsMaps.keys():
                         #for docId in docIds:
                             # if docId in line_temp_dict[term].keys(): -> doesnt happpen because we only write to file after reading the whole document

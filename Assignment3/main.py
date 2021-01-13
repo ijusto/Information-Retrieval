@@ -105,8 +105,8 @@ def main(argv):
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
         tokenizer.changeText(query)
 
-        queryTerms, queryTermsPositions = tokenizer.getTerms(withPositions=True if storePos == '1' else False)
-
+        #queryTerms, queryTermsPositions = tokenizer.getTerms(withPositions=True if storePos == '1' else False)
+        queryTerms = tokenizer.getTerms(withPositions=False)
 
         # ------------------------------------------- SEARCHER ---------------------------------------------------------
         start = timeit.default_timer()

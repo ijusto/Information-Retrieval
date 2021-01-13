@@ -23,10 +23,17 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 print('term_idf: {}'.format(termInfo[-1:][0]))
                 term_idf = float(termInfo[-1:][0])
                 term = ''.join(termInfo[:-1])  # necessary for terms with ':' in them (like websites)
-                if term < biggerQueryTerm:
-                    break
-                if term not in queriesTerms:
-                    continue
+                print('bqt: {}, query_terms: {}, term: {}'.format(biggerQueryTerm, queriesTerms, term))
+
+                # term not in the beginning or end of a word, like in a hypenate word
+                if list(filter(lambda t: t.startswith(term) or t.endswith(term), queriesTerms)) == [] \
+                        and term not in queriesTerms: # or term not in queries
+                    if term > biggerQueryTerm: # term lexically bigger than query terms
+                        break   # no need to continue reading the index, looking for the documents of the query terms
+                    else:
+                        line = f.readline()
+                        continue
+
                 print('term: {}'.format(term))
                 del termInfo
                 doc_ids = [doc_info.split(':')[0] for doc_info in info[-1:]]
@@ -61,10 +68,15 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 termInfo = info[:-1]
                 term_idf = float(termInfo[-1:][0])
                 term = ''.join(termInfo[:-1])  # necessary for terms with ':' in them (like websites)
-                if term < biggerQueryTerm:
-                    break
-                if term not in queriesTerms:
-                    continue
+                # term not in the beginning or end of a word, like in a hypenate word
+                if list(filter(lambda t: t.startswith(term) or t.endswith(term), queriesTerms)) == [] \
+                        and term not in queriesTerms:  # or term not in queries
+                    if term > biggerQueryTerm:  # term lexically bigger than query terms
+                        break  # no need to continue reading the index, looking for the documents of the query terms
+                    else:
+                        line = f.readline()
+                        continue
+
                 del termInfo
                 doc_ids = [doc_info.split(':')[0] for doc_info in info[-1:]]
                 term_weights = [doc_info.split(':')[1] for doc_info in info[-1:]]

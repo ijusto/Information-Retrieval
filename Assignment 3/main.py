@@ -20,23 +20,27 @@ def main(argv):
     queriesFile = ''
     rankType = ''
     storePos = ''
+    proximity = ''
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:r:p:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
-                                                     "rankType=", "storePositions="])
+        opts, args = getopt.getopt(argv, "hf:t:q:r:p:b", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
+                                                     "rankType=", "storePositions=", "proximityBoost="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes')
+              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes '
+              '-b <proximityBoost: 0 - No, 1 - Yes')
         sys.exit()
 
-    if len(opts) != 5:
+    if len(opts) != 6:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes')
+              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes '
+              '-b <proximityBoost: 0 - No, 1 - Yes')
         sys.exit()
 
     for opt, arg in opts:
         if opt == '-h':
             print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-                  '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes')
+                  '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes '
+              '-b <proximityBoost: 0 - No, 1 - Yes')
             sys.exit()
         elif opt in ("-f", "--collectionFile"):
             if not path.exists(arg):
@@ -63,6 +67,11 @@ def main(argv):
                 print('\nIncorrect store positions choice. No: 0, Yes: 1.')
                 sys.exit()
             storePos = arg
+        elif opt in ("-b", "--proximityBoost"):
+            if arg != '0' and arg != '1':
+                print('\nIncorrect proximity boost choice. No: 0, Yes: 1.')
+                sys.exit()
+            proximity = arg
 
     # ----------------------------------------------- INDEXER ----------------------------------------------------------
     indexer = Indexer(collectionFile, tokenizerType, True if storePos=='1' else False)
@@ -99,14 +108,11 @@ def main(argv):
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
         tokenizer.changeText(query)
 
-        if storePos == '1':
-            queryTerms, queryTermsPositions = tokenizer.getTerms(withPositions=True)
-        else:
-            queryTerms = tokenizer.getTerms(withPositions=False)
-            queryTermsPositions = None
+        queryTerms, queryTermsPositions = tokenizer.getTerms(withPositions=True if storePos == '1' else False)
+
 
         # ------------------------------------------- SEARCHER ---------------------------------------------------------
-        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, queryTermsPositions, 'index')
+        documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index', True if storePos == '1' else False)
 
         # -------------------------------------------- RANKER ----------------------------------------------------------
         ranker = Ranker(documentsInfo, avgDocLen)

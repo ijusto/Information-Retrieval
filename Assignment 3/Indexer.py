@@ -180,9 +180,9 @@ class Indexer:
                     final_dict.writelines(
                         [minorTerm + ':' +                                                                 # term:
                          str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +                        # idf;
-                         ''.join([str(doc_id) + ':' +                                                      # doc_id:
+                         ';'.join([str(doc_id) + ':' +                                                     # doc_id:
                                   str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) + ':' + # term_weight:
-                                  ','.join([str(pos) for pos in positions]) + ';'                          # pos1,pos2,...
+                                  ','.join([str(pos) for pos in positions])                                # pos1,pos2,...
                                             for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
 
                     ntermsToDisk += 1
@@ -305,8 +305,8 @@ class Indexer:
                     final_dict.writelines(
                         [minorTerm + ':' +                                                       # term:
                          str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +              # idf;
-                         ''.join([str(doc_id) + ':' +                                            # doc_id:
-                                  str(getLogWeight(minorTerm, doc_id, self.postingsMaps)) + ';'  # term_weight;
+                         ';'.join([str(doc_id) + ':' +                                           # doc_id:
+                                  str(getLogWeight(minorTerm, doc_id, self.postingsMaps))        # term_weight;
                                   for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
 
                     # remove it from memory

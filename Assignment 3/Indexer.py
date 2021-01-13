@@ -169,7 +169,7 @@ class Indexer:
                     # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
                     # get first element of alphabetical sorted list of terms in memory
                     minorTerm = sorted(self.postingsMaps.keys())[0]
-                    print('[\'-Complex@ZIF-67:qgdvdy3k:1|gltf4m6w:1|\n:5.422985219043376;\n\']')
+                    print('[\'-Complex@ZIF-67:qgdvdy3k:1|gltf4m6w:1|\n:5.422985219043376|\n\']')
                     print('term: ' + minorTerm)
                     print('idf: ' + str(getIDFt(minorTerm, self.postingsMaps, self.N)))
                     print('doc_ids: ' + ''.join([str(doc_id) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
@@ -179,8 +179,8 @@ class Indexer:
                     # write its information to the final dictionary\
                     final_dict.writelines(
                         [minorTerm + ':' +                                                                 # term:
-                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +                        # idf;
-                         ';'.join([str(doc_id) + ':' +                                                     # doc_id:
+                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + '|' +                        # idf|
+                         '|'.join([str(doc_id) + ':' +                                                     # doc_id:
                                   str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) + ':' + # term_weight:
                                   ','.join([str(pos) for pos in positions])                                # pos1,pos2,...
                                             for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
@@ -201,7 +201,7 @@ class Indexer:
             final_dict.close()
 
             stop = timeit.default_timer()
-            print('merge and write of final dictionary: {} seconds'.format(stop - start))
+            print('merge and write of final dictionary: {} minutes and {} seconds'.format((stop - start) // 60, (stop - start) % 60))
 
 
 
@@ -304,9 +304,9 @@ class Indexer:
                     # write its information to the final dictionary
                     final_dict.writelines(
                         [minorTerm + ':' +                                                       # term:
-                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + ';' +              # idf;
-                         ';'.join([str(doc_id) + ':' +                                           # doc_id:
-                                  str(getLogWeight(minorTerm, doc_id, self.postingsMaps))        # term_weight;
+                         str(getIDFt(minorTerm, self.postingsMaps, self.N)) + '|' +              # idf|
+                         '|'.join([str(doc_id) + ':' +                                           # doc_id:
+                                  str(getLogWeight(minorTerm, doc_id, self.postingsMaps))        # term_weight|
                                   for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
 
                     # remove it from memory
@@ -322,7 +322,7 @@ class Indexer:
             final_dict.close()
 
             stop = timeit.default_timer()
-            print('merge and write of final dictionary: {} seconds'.format(stop - start))
+            print('merge and write of final dictionary: {} minutes and {} seconds'.format((stop - start) // 60, (stop - start) % 60))
 
     def writeIndexToBlockFileWithPositions(self, filename):
         if os.path.isfile(filename):
@@ -351,7 +351,3 @@ class Indexer:
                               for term, pMap in self.postingsMaps.items()])
 
         indexFile.close()
-
-    # todo: description
-    def getVocabularySize(self):
-        return len(self.postingsMaps)

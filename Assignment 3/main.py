@@ -87,9 +87,6 @@ def main(argv):
     process = psutil.Process(os.getpid())
     print('\nMemory required for indexing: {} MB'.format(process.memory_info().rss / 1000000))  # rss in bytes
 
-    #   b) What is your vocabulary size?
-    print('\nVocabulary Size: {}'.format(indexer.getVocabularySize()))
-
     f = open(queriesFile, 'r')
     queries = f.read().splitlines()
     f.close()
@@ -101,8 +98,8 @@ def main(argv):
     else:  # better
         tokenizer = Tokenizer.BetterTokenizer('')
 
-    start = []
-    end = []
+    start_queries = []
+    end_queries = []
     for query in queries:
 
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
@@ -112,13 +109,19 @@ def main(argv):
 
 
         # ------------------------------------------- SEARCHER ---------------------------------------------------------
+        start = timeit.default_timer()
         documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index', True if storePos == '1' else False)
+        stop = timeit.default_timer()
+        print(
+            'Searching time - {} tokenizer: {} min and {} seconds'.format("simple" if tokenizerType == "0" else "better",
+                                                                         (stop - start) // 60, (stop - start) % 60))
+
 
         # -------------------------------------------- RANKER ----------------------------------------------------------
         ranker = Ranker(documentsInfo, avgDocLen)
         
         # Start time (latency purpose)
-        start.append(timer())
+        start_queries.append(timer())
         # If rankType = 0 (tf-idf)
         if rankType == '0':
             # If proximity = 1 (Proximity Boost)
@@ -135,10 +138,10 @@ def main(argv):
                 scores += [ranker.bm25(1.2, 0.75)]
 
         # End time (latency purpose)
-        end.append(timer())
+        end_queries.append(timer())
 
     # Evaluation
-    Evaluation.getResults('./data/queries.relevance.txt', queries, scores, start, end)
+    Evaluation.getResults('./data/queries.relevance.txt', queries, scores, start_queries, end_queries)
 
 
 if __name__ == "__main__":

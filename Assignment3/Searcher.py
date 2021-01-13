@@ -26,8 +26,8 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 print('bqt: {}, query_terms: {}, term: {}'.format(biggerQueryTerm, queriesTerms, term))
 
                 # term not in the beginning or end of a word, like in a hypenate word
-                if list(filter(lambda t: t.startswith(term) or t.endswith(term), queriesTerms)) == [] \
-                        and term not in queriesTerms: # or term not in queries
+                if list(filter(lambda t: t.startswith(term) or t.endswith(term) or term.startswith(t) or term.endswith(t),
+                            queriesTerms)) == []: # or term not in queries
                     if term > biggerQueryTerm: # term lexically bigger than query terms
                         break   # no need to continue reading the index, looking for the documents of the query terms
                     else:
@@ -69,8 +69,8 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 term_idf = float(termInfo[-1:][0])
                 term = ''.join(termInfo[:-1])  # necessary for terms with ':' in them (like websites)
                 # term not in the beginning or end of a word, like in a hypenate word
-                if list(filter(lambda t: t.startswith(term) or t.endswith(term), queriesTerms)) == [] \
-                        and term not in queriesTerms:  # or term not in queries
+                if list(filter(lambda t: t.startswith(term) or t.endswith(term) or term.startswith(t) or term.endswith(t),
+                            queriesTerms)) == []:  # or term not in queries
                     if term > biggerQueryTerm:  # term lexically bigger than query terms
                         break  # no need to continue reading the index, looking for the documents of the query terms
                     else:

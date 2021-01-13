@@ -74,6 +74,7 @@ def main(argv):
             proximity = arg
 
     # ----------------------------------------------- INDEXER ----------------------------------------------------------
+    '''
     indexer = Indexer(collectionFile, tokenizerType, True if storePos=='1' else False)
 
     start = timeit.default_timer()
@@ -86,6 +87,7 @@ def main(argv):
     # How much memory (roughly) is required to index this collection?
     process = psutil.Process(os.getpid())
     print('\nMemory required for indexing: {} MB'.format(process.memory_info().rss / 1000000))  # rss in bytes
+    '''
 
     f = open(queriesFile, 'r')
     queries = f.read().splitlines()

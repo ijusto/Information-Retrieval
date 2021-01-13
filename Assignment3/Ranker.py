@@ -33,6 +33,7 @@ class Ranker:
             elif pos + 4 in pos_list2:
                 termscore = 0.60
             total_score += termscore
+        print('Proximity total score: {}%'.format(total_score))
         return total_score  # the score of 2 co-occurring terms
 
     # Calculate the proximity score for every 2 terms in the query    
@@ -61,7 +62,7 @@ class Ranker:
             proximity_smoothing = lamb * v  # proximity smoothing
             scoreDict_smoothing = (1 - lamb) * scoreDict[k]  # scoreDict smoothing
             tp_score[k] = scoreDict_smoothing + proximity_smoothing
-        tp_sort_dict = sorted(tp_score.iteritems(), key=operator.itemgetter(1), reverse=True)
+        tp_sort_dict = sorted(tp_score.items(), key=lambda items: items[1], reverse=True)
         return dict(tp_sort_dict)
         # form_the_file(qid, tp_sort_dict)
 

@@ -87,7 +87,7 @@ class Indexer:
                 terms, termPositions = tokenizer.getTerms(withPositions=True)
                 tokenizer.changeText("")  # clean term memory from tokenizer
 
-                # first, we populate the dictionary postingsMaps with the term frequency {term: {docId: [termpositions]} }
+                # first, we populate the dictionary postingsMaps with the term positions {term: {docId: [termpositions]} }
 
                 if (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total) <= 10 and self.postingsMaps != {}:  # available memory
                     #start = timeit.default_timer()
@@ -145,14 +145,20 @@ class Indexer:
                         continue
 
                     # ------------------------ Save line info to memory --------------------------------------------
-                    info = line.split('[:]+|[|]+') # 'term', 'docid', 'pos1,pos2,pos3', 'docid', 'pos1,pos2,pos3', ...
+                    info = line.split('|') # 'term', 'docid', 'pos1,pos2,pos3', 'docid', 'pos1,pos2,pos3', ...
+                    info.remove('\n')
+                    while '' in info:
+                        info.remove('')
                     term = info[0] # term
+                    print('term: {}'.format(term))
                     docIds = info[1:][0::2] # [docid, docid, ...]
+                    print('docIds: {}'.format(docIds))
                     termPositions = [positions.split(',') for positions in info[1:][1::2]] # [[pos1,pos2,pos3], [pos1,pos2,pos3], ...]
-
+                    print('termPositions: {}'.format(termPositions))
+                    print('postingsMaps: {}'.format(list(self.postingsMaps.items())))
                     if term in self.postingsMaps.keys():
                         #for docId in docIds:
-                            # if docId in line_temp_dict[term].keys(): -> doesnt happpen because we only write to file after reading the hole document
+                            # if docId in line_temp_dict[term].keys(): -> doesnt happpen because we only write to file after reading the whole document
                         # merge postings list (update in order if dict document)
                         self.postingsMaps[term].update({docIds[docInd]:termPositions[docInd] for docInd in range(len(docIds))})
                     else:
@@ -163,6 +169,12 @@ class Indexer:
                     # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
                     # get first element of alphabetical sorted list of terms in memory
                     minorTerm = sorted(self.postingsMaps.keys())[0]
+                    print('[\'-Complex@ZIF-67:qgdvdy3k:1|gltf4m6w:1|\n:5.422985219043376;\n\']')
+                    print('term: ' + minorTerm)
+                    print('idf: ' + str(getIDFt(minorTerm, self.postingsMaps, self.N)))
+                    print('doc_ids: ' + ''.join([str(doc_id) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
+                    print('LogWeightPositions: ' + ''.join([str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
+                    print('positions: ' + ','.join([','.join([str(pos) for pos in positions]) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
 
                     # write its information to the final dictionary\
                     final_dict.writelines(
@@ -267,7 +279,10 @@ class Indexer:
                         continue
 
                     # ------------------------ Save line info to memory --------------------------------------------
-                    info = line.split('[;]+|[:]+')  # 'term', 'docid', 'term_freq', 'docid', 'term_freq', ...
+                    info = line.split('|')  # 'term', 'docid', 'term_freq', 'docid', 'term_freq', ...
+                    info.remove('\n')
+                    while '' in info:
+                        info.remove('')
                     term = info[0]  # term
                     docIds = info[1:][0::2]  # [docid, docid, ...]
                     termFreqs = info[1:][1::2]  # [term_freq, term_freq, ...]
@@ -309,9 +324,6 @@ class Indexer:
             stop = timeit.default_timer()
             print('merge and write of final dictionary: {} seconds'.format(stop - start))
 
-
-    # 2. Write the resulting index to file using the following format (one term per line):
-    #       term:id|doc_id:term_weight:pos1,pos2,pos3,...|doc_id:term_weight:pos1,pos2,pos3,...
     def writeIndexToBlockFileWithPositions(self, filename):
         if os.path.isfile(filename):
             os.remove(filename)
@@ -321,22 +333,20 @@ class Indexer:
         # sort postingsMaps by terms
         self.postingsMaps = dict(sorted(self.postingsMaps.items()))
 
-        # term:docid:pos0,pos1,pos2|docid
-        indexFile.writelines([term + ':' + ''.join([str(doc_id) + ':' + ','.join([str(pos) for pos in termPositions]) + '|'
+        # term|docid|pos0,pos1,pos2|docid|pos1
+        indexFile.writelines([term + '|' + ''.join([str(doc_id) + '|' + ','.join([str(pos) for pos in termPositions]) + '|'
                                                                      for doc_id, termPositions in pMap.items()]) + '\n'
                               for term, pMap in self.postingsMaps.items()])
 
         indexFile.close()
 
-    # 2. Write the resulting index to file using the following format (one term per line):
-    #       term;doc_id:term_freq;doc_id:term_freq;...
     def writeIndexToBlockFile(self, filename):
         if os.path.isfile(filename):
             os.remove(filename)
 
         indexFile = open(filename, 'w')
 
-        indexFile.writelines([term + ';' + ';'.join([str(doc_id) + ':' + str(term_freq)
+        indexFile.writelines([term + '|' + ''.join([str(doc_id) + '|' + str(term_freq)
                                                      for doc_id, term_freq in pMap.items()]) + '\n'
                               for term, pMap in self.postingsMaps.items()])
 

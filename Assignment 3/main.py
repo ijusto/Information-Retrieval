@@ -22,7 +22,7 @@ def main(argv):
     storePos = ''
     proximity = ''
     try:
-        opts, args = getopt.getopt(argv, "hf:t:q:r:p:b", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
+        opts, args = getopt.getopt(argv, "hf:t:q:r:p:b:", ["collectionFile=", "tokenizerType=", "queriesFilePath=",
                                                      "rankType=", "storePositions=", "proximityBoost="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '

@@ -26,21 +26,21 @@ def main(argv):
                                                      "rankType=", "storePositions=", "proximityBoost="])
     except getopt.GetoptError:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes '
-              '-b <proximityBoost: 0 - No, 1 - Yes')
+              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes> '
+              '-b <proximityBoost: 0 - No, 1 - Yes>')
         sys.exit()
 
     if len(opts) != 6:
         print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes '
-              '-b <proximityBoost: 0 - No, 1 - Yes')
+              '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes> '
+              '-b <proximityBoost: 0 - No, 1 - Yes>')
         sys.exit()
 
     for opt, arg in opts:
         if opt == '-h':
             print('main.py -f <collectionFile> -t <tokenizerType: 0 - Simple, 1 - Better> -q <queriesFilePath> '
-                  '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes '
-              '-b <proximityBoost: 0 - No, 1 - Yes')
+                  '-r <rankType: 0 - TF-IDF, 1 - BM25> -p <storePositions: 0 - No, 1 - Yes> '
+              '-b <proximityBoost: 0 - No, 1 - Yes>')
             sys.exit()
         elif opt in ("-f", "--collectionFile"):
             if not path.exists(arg):

@@ -6,6 +6,8 @@
 
 def searchDocuments(queriesTerms, indexFile, withPostitions):
 
+    biggerQueryTerm = sorted(queriesTerms)[-1]
+    # indexFile with terms in alphabetical order
     if withPostitions:
         documentsInfo = {}  # {docId: (lenD, {term: (term_idf, logWeight, [pos1, pos2, ...])})}
         docLens = {}  # {docId: len}
@@ -21,6 +23,10 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 print('term_idf: {}'.format(termInfo[-1:][0]))
                 term_idf = float(termInfo[-1:][0])
                 term = ''.join(termInfo[:-1])  # necessary for terms with ':' in them (like websites)
+                if term < biggerQueryTerm:
+                    break
+                if term not in queriesTerms:
+                    continue
                 print('term: {}'.format(term))
                 del termInfo
                 doc_ids = [doc_info.split(':')[0] for doc_info in info[-1:]]
@@ -32,16 +38,15 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 for docInd in range(len(doc_ids)):
                     docLens[doc_ids[docInd]] = 1 if doc_ids[docInd] not in docLens.keys() else docLens[doc_ids[docInd]] + 1
 
-                    if term in queriesTerms:
-                        if doc_ids[docInd] not in documentsInfo.keys():
-                            documentsInfo[doc_ids[docInd]] = {}
-                            documentsInfo[doc_ids[docInd]][term]: (term_idf,
-                                                                   float(term_weights[docInd]),
-                                                                   [int(pos) for pos in term_positions[docInd]])
-                        else:
-                            documentsInfo[doc_ids[docInd]][term] = (term_idf,
-                                                                    float(term_weights[docInd]),
-                                                                    [int(pos) for pos in term_positions[docInd]])
+                    if doc_ids[docInd] not in documentsInfo.keys():
+                        documentsInfo[doc_ids[docInd]] = {}
+                        documentsInfo[doc_ids[docInd]][term]: (term_idf,
+                                                               float(term_weights[docInd]),
+                                                               [int(pos) for pos in term_positions[docInd]])
+                    else:
+                        documentsInfo[doc_ids[docInd]][term] = (term_idf,
+                                                                float(term_weights[docInd]),
+                                                                [int(pos) for pos in term_positions[docInd]])
 
                 line = f.readline()
         f.close()
@@ -56,20 +61,23 @@ def searchDocuments(queriesTerms, indexFile, withPostitions):
                 termInfo = info[:-1]
                 term_idf = float(termInfo[-1:][0])
                 term = ''.join(termInfo[:-1])  # necessary for terms with ':' in them (like websites)
+                if term < biggerQueryTerm:
+                    break
+                if term not in queriesTerms:
+                    continue
                 del termInfo
                 doc_ids = [doc_info.split(':')[0] for doc_info in info[-1:]]
                 term_weights = [doc_info.split(':')[1] for doc_info in info[-1:]]
                 for docInd in range(len(doc_ids)):
                     docLens[doc_ids[docInd]] = 1 if doc_ids[docInd] not in docLens.keys() else docLens[doc_ids[docInd]] + 1
 
-                    if term in queriesTerms:
-                        if doc_ids[docInd] not in documentsInfo.keys():
-                            documentsInfo[doc_ids[docInd]] = {}
-                            documentsInfo[doc_ids[docInd]][term]: (term_idf,
-                                                                   float(term_weights[docInd]))
-                        else:
-                            documentsInfo[doc_ids[docInd]][term] = (term_idf,
-                                                                    float(term_weights[docInd]))
+                    if doc_ids[docInd] not in documentsInfo.keys():
+                        documentsInfo[doc_ids[docInd]] = {}
+                        documentsInfo[doc_ids[docInd]][term]: (term_idf,
+                                                               float(term_weights[docInd]))
+                    else:
+                        documentsInfo[doc_ids[docInd]][term] = (term_idf,
+                                                                float(term_weights[docInd]))
 
                 line = f.readline()
         f.close()

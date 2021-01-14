@@ -57,7 +57,7 @@ class Ranker:
                         proximity_score[docId] += score
                     except KeyError:
                         proximity_score[docId] = score
-        for k, v in proximity_score.iteritems():
+        for k, v in proximity_score.items():
             doclen = self.avgDocLen[k]  # document's length
             proximity_smoothing = lamb * v  # proximity smoothing
             scoreDict_smoothing = (1 - lamb) * scoreDict[k]  # scoreDict smoothing
@@ -76,9 +76,9 @@ class Ranker:
         # logarithmic weight
         for docId, (_, termsInfo) in self.documentsInfo.items():
             documentsWeights[docId] = {}
-            for term, (idf, logWeight) in termsInfo.items():
+            for term, (idf, logWeight, _) in termsInfo.items():
                 if term not in queriesWeights.keys():
-                    queriesWeights[term] = (idf, logWeight)
+                    queriesWeights[term] = (idf, logWeight, _)
                 documentsWeights[docId][term] = logWeight
 
         # cosine normalization
@@ -89,7 +89,7 @@ class Ranker:
 
         # ltc
         # tfidf
-        for term, (idf, logWeight) in queriesWeights.items():
+        for term, (idf, logWeight, _) in queriesWeights.items():
             queriesWeights[term] = logWeight * idf
 
         # cosine normalization

@@ -34,6 +34,7 @@ class Indexer:
     #  @param self The object pointer.
     def index(self):
 
+        start_indexing = timeit.default_timer()
         self.N = 0
 
         if self.tokenizerType == '0':  # simple
@@ -43,7 +44,6 @@ class Indexer:
 
         corpusReader = CorpusReader.CorpusReader(self.collectionPath)
 
-        memoryUsePercLimit = psutil.Process(os.getpid()).memory_percent()*100 + (psutil.virtual_memory().available * 100 / psutil.virtual_memory().total)/2 # percentage of memory used by the current Python instance plus 10%
         print('start memory available: {}%'.format(psutil.virtual_memory().available * 100 / psutil.virtual_memory().total))
 
         corpusReader.startReadingCorpus()
@@ -123,11 +123,19 @@ class Indexer:
 
 
             # ---------------------------------------- ENDED INDEXING BLOCKS -------------------------------------------
+            stop_indexing = timeit.default_timer()
+            print('indexing into blocks: {} minutes and {} seconds'.format((stop_indexing - start_indexing) // 60, (stop_indexing - start_indexing) % 60))
+
             start = timeit.default_timer()
+            if os.path.isfile("index"):
+                os.remove("index")
+
             final_dict = open("index", "w")
             dict_names = ['./dicts/dict' + str(nDict) for nDict in range(nDicts)]
 
             # -------------------------------------------- MERGE INDEX BLOCKS ------------------------------------------
+            print('merging dictionary fase and writting index to disk')
+
             temp_dicts = [open(dict_name, "r") for dict_name in dict_names]
             ntermsToDisk = 0
             while temp_dicts != []:
@@ -136,7 +144,7 @@ class Indexer:
                     line = dict_file.readline()
 
                     if not line:
-                        print('file: {}, temp_dicts: {}'.format(dict_file, temp_dicts))
+                        #print('file: {}, temp_dicts: {}'.format(dict_file, temp_dicts))
                         dict_file.close()
                         # delete dictionary block from disk
                         os.remove(dict_names[temp_dicts.index(dict_file)])
@@ -150,11 +158,11 @@ class Indexer:
                     while '' in info:
                         info.remove('')
                     term = info[0] # term
-                    print('term: {}'.format(term))
+                    #print('term: {}'.format(term))
                     docIds = info[1:][0::2] # [docid, docid, ...]
-                    print('docIds: {}'.format(docIds))
+                    #print('docIds: {}'.format(docIds))
                     termPositions = [positions.split(',') for positions in info[1:][1::2]] # [[pos1,pos2,pos3], [pos1,pos2,pos3], ...]
-                    print('termPositions: {}'.format(termPositions))
+                    #print('termPositions: {}'.format(termPositions))
                     #print('postingsMaps: {}'.format(list(self.postingsMaps.items())))
                     if term in self.postingsMaps.keys():
                         #for docId in docIds:
@@ -169,12 +177,12 @@ class Indexer:
                     # todo: verify all this functions (storecalculations) work with this new self.postingsMaps dictionary structure
                     # get first element of alphabetical sorted list of terms in memory
                     minorTerm = sorted(self.postingsMaps.keys())[0]
-                    print('[\'-Complex@ZIF-67:qgdvdy3k:1|gltf4m6w:1|\n:5.422985219043376|\n\']')
-                    print('term: ' + minorTerm)
-                    print('idf: ' + str(getIDFt(minorTerm, self.postingsMaps, self.N)))
-                    print('doc_ids: ' + ''.join([str(doc_id) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
-                    print('LogWeightPositions: ' + ''.join([str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
-                    print('positions: ' + ','.join([','.join([str(pos) for pos in positions]) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
+                    #print('[\'-Complex@ZIF-67:qgdvdy3k:1|gltf4m6w:1|\n:5.422985219043376|\n\']')
+                    #print('term: ' + minorTerm)
+                    #print('idf: ' + str(getIDFt(minorTerm, self.postingsMaps, self.N)))
+                    #print('doc_ids: ' + ''.join([str(doc_id) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
+                    #print('LogWeightPositions: ' + ''.join([str(getLogWeightPositions(minorTerm, doc_id, self.postingsMaps)) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
+                    #print('positions: ' + ','.join([','.join([str(pos) for pos in positions]) for doc_id, positions in self.postingsMaps[minorTerm].items()]))
 
                     # write its information to the final dictionary\
                     final_dict.writelines(
@@ -186,7 +194,7 @@ class Indexer:
                                             for doc_id, positions in self.postingsMaps[minorTerm].items()]) + '\n'])
 
                     ntermsToDisk += 1
-                    print('merging dictionary fase: writed into disk {} terms'.format(ntermsToDisk))
+                    #print('merging dictionary fase: writed into disk {} terms'.format(ntermsToDisk))
 
                     # remove it from memory
                     del self.postingsMaps[minorTerm]
@@ -260,6 +268,8 @@ class Indexer:
 
             # ---------------------------------------- ENDED INDEXING BLOCKS -------------------------------------------
             start = timeit.default_timer()
+            if os.path.isfile("index"):
+                os.remove("index")
             final_dict = open("index", "w")
             dict_names = ['./dicts/dict' + str(nDict) for nDict in range(nDicts)]
 

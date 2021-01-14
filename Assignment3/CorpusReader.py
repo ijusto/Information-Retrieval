@@ -18,15 +18,15 @@ class CorpusReader:
         self.csv_file.readline() # skip header
 
     def readDoc(self):
-        start = timeit.default_timer()
+        #start = timeit.default_timer()
 
         line = self.csv_file.readline()
 
         if not line:
             self.csv_file.close()
 
-            stop = timeit.default_timer()
-            print('last readDoc: {} seconds'.format(stop - start))
+            #stop = timeit.default_timer()
+            print('Read last document from corpus reader')
             return -1
 
         # https://stackoverflow.com/questions/18893390/splitting-on-comma-outside-quotes

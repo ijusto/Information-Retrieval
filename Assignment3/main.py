@@ -74,7 +74,6 @@ def main(argv):
             proximity = arg
 
     # ----------------------------------------------- INDEXER ----------------------------------------------------------
-    '''
     indexer = Indexer(collectionFile, tokenizerType, True if storePos=='1' else False)
 
     start = timeit.default_timer()
@@ -87,7 +86,6 @@ def main(argv):
     # How much memory (roughly) is required to index this collection?
     process = psutil.Process(os.getpid())
     print('\nMemory required for indexing: {} MB'.format(process.memory_info().rss / 1000000))  # rss in bytes
-    '''
 
     f = open(queriesFile, 'r')
     queries = f.read().splitlines()
@@ -120,6 +118,7 @@ def main(argv):
 
 
         # -------------------------------------------- RANKER ----------------------------------------------------------'
+        start = timeit.default_timer()
         ranker = Ranker(documentsInfo, avgDocLen)
         
         # Start time (latency purpose)
@@ -138,6 +137,12 @@ def main(argv):
                 scores += [ranker.proximity_boost(ranker.bm25(1.2, 0.75), queryTerms)]
             else:
                 scores += [ranker.bm25(1.2, 0.75)]
+
+        stop = timeit.default_timer()
+        print(
+            'Ranking time - {} tokenizer: {} min and {} seconds'.format(
+                "simple" if tokenizerType == "0" else "better",
+                (stop - start) // 60, (stop - start) % 60))
 
         # End time (latency purpose)
         end_queries.append(timer())

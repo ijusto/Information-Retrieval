@@ -3,7 +3,6 @@
 #  @author Daniel Marques, 85070
 
 import getopt
-import sys
 from os import path
 import Evaluation
 from Indexer import *
@@ -80,12 +79,7 @@ def main(argv):
     indexer.index()
     stop = timeit.default_timer()
 
-    #   a) What was the total indexing time?
-    print('Indexing time - {} tokenizer: {} min and {} seconds'.format("simple" if tokenizerType == "0" else "better", (stop - start)//60, (stop - start) % 60))
-
-    # How much memory (roughly) is required to index this collection?
-    process = psutil.Process(os.getpid())
-    print('\nMemory required for indexing: {} MB'.format(process.memory_info().rss / 1000000))  # rss in bytes
+    print('Indexing total time - {} tokenizer: {} min and {} seconds'.format("simple" if tokenizerType == "0" else "better", (stop - start)//60, (stop - start) % 60))
 
     f = open(queriesFile, 'r')
     queries = f.read().splitlines()
@@ -100,6 +94,8 @@ def main(argv):
 
     start_queries = []
     end_queries = []
+    time_searcher = 0
+    time_ranker = 0
     for query in queries:
 
         # --------------------------------------- QUERY OPERATIONS -----------------------------------------------------
@@ -112,10 +108,7 @@ def main(argv):
         start = timeit.default_timer()
         documentsInfo, avgDocLen = Searcher.searchDocuments(queryTerms, 'index', True if storePos == '1' else False)
         stop = timeit.default_timer()
-        print(
-            'Searching time - {} tokenizer: {} min and {} seconds'.format("simple" if tokenizerType == "0" else "better",
-                                                                         (stop - start) // 60, (stop - start) % 60))
-
+        time_searcher = time_searcher + stop - start
 
         # -------------------------------------------- RANKER ----------------------------------------------------------'
         start = timeit.default_timer()
@@ -139,13 +132,14 @@ def main(argv):
                 scores += [ranker.bm25(1.2, 0.75)]
 
         stop = timeit.default_timer()
-        print(
-            'Ranking time - {} tokenizer: {} min and {} seconds'.format(
-                "simple" if tokenizerType == "0" else "better",
-                (stop - start) // 60, (stop - start) % 60))
+        time_ranker = time_ranker + stop - start
 
         # End time (latency purpose)
         end_queries.append(timer())
+
+
+    print('Searching time for all queries: {} min and {} seconds'.format(time_searcher // 60, time_searcher % 60))
+    print('Ranking time for all queries: {} min and {} seconds'.format(time_ranker // 60, time_ranker % 60))
 
     # Evaluation
     Evaluation.getResults('./data/queries.relevance.txt', queries, scores, start_queries, end_queries)

@@ -1,4 +1,5 @@
 # Assignment 3
+Please save the corpus with the name 'metadata_2020-12-01.csv' in the 'data' folder.
 
 Usage
 ----------------------
@@ -6,6 +7,7 @@ Usage
 Example:
     python3 main.py -f ./data/metadata_2020-12-01.csv -t 1 -q ./data/queries.txt -r 0 -p 1 -b 1
 
+Results of the previous example in the file 'results.txt'.
 
 
     
